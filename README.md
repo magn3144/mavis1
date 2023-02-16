@@ -1,4 +1,4 @@
-# MAvis: Searchclient 
+# MAvis: Searchclient x
 
 This readme describes how to use the included Python search client with the server that is contained in server.jar.
 
