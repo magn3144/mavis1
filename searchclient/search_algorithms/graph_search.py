@@ -56,6 +56,51 @@ def graph_search(
     # For debugging, remember that you can use print(node, file=sys.stderr) to get a representation of the state.
     # You should also take a look at the frontiers in the strategies folder to see which methods they expose
 
+    # first initializes the frontier with the initial state,
+    frontier.add(initial_state)
+
+    # creates two sets to keep track of the expanded and visited states
+    # Keep track of  expanded and visited states
+    expanded = set()
+    visited = set()
+    # The expanded set contains the states that have already been explored,
+    # and the visited set contains the states that are in the frontier or have already been explored
+
+    # loop continues until the frontier is empty or a goal state is found.
+    # each iteration of the loop, the function pops the next state from the frontier
+    # and checks whether it is a goal state.
+    # If it is, the function returns a tuple with the boolean True and the plan to reach the goal state.
+    while frontier:
+        # Next state from frontier
+        current_state = frontier.pop()
+
+        # Check if goal state
+        if goal_description.is_goal(current_state):
+            return True, current_state.extract_plan()
+
+        # If the state is not a goal state, the function adds it to the expanded set
+        # Add to expanded set
+        expanded.add(current_state)
+        # and generates the applicable actions for the state.
+
+        applicable_actions = current_state.get_applicable_actions(action_set)
+
+        # Get successor states for each applicable action
+        for action in applicable_actions:
+            next_state = current_state.result(action)
+
+            # Check if next state has been visited
+            if next_state in visited:
+                continue
+
+            # Add the next state to the frontier and visited sets
+            frontier.add(next_state)
+            visited.add(next_state)
+
+    # If no solution is found, the function returns a tuple with the boolean False and an empty list for the plan.
+    # Return False if no solution is found
+    return False, []
+
     return_fixed_solution = True
     
     if return_fixed_solution:
