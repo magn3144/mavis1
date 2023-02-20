@@ -18,32 +18,26 @@ import domains.hospital.state as h_state
 class FrontierDFS:
 
     def __init__(self):
-        # Your code here...
-        raise NotImplementedError()
+        self.stack = []
+        self.set = set()
 
     def prepare(self, goal_description: h_goal_description.HospitalGoalDescription):
-        # Prepare is called at the beginning of a search and since we will sometimes reuse frontiers for multiple
-        # searches, prepares must ensure that state is cleared.
-        
-        # Your code here...
-        raise NotImplementedError()
+        self.stack = []
 
     def add(self, state: h_state.HospitalState):
-        # Your code here...
-        raise NotImplementedError()
+        self.stack.append(state)
+        self.set.add(state)
 
     def pop(self) -> h_state.HospitalState:
-        # Your code here...
-        raise NotImplementedError()
+        state = self.stack.pop()
+        self.set.remove(state)
+        return state
 
     def is_empty(self) -> bool:
-        # Your code here...
-        raise NotImplementedError()
+        return len(self.stack) == 0
 
     def size(self) -> int:
-        # Your code here...
-        raise NotImplementedError()
+        return len(self.stack)
 
     def contains(self, state: h_state.HospitalState) -> bool:
-        # Your code here...
-        raise NotImplementedError()
+        return state in self.stack
