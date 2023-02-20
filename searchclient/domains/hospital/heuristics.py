@@ -30,8 +30,11 @@ class HospitalGoalCountHeuristics:
         pass
 
     def h(self, state: h_state.HospitalState, goal_description: h_goal_description.HospitalGoalDescription) -> int:
-        # Your code goes here...
-        return 0
+        count = 0
+        for (position, char, is_positive) in goal_description.agent_goals:
+            if not state.agent_at(position):
+                count += 1
+        return count
 
 
 class HospitalAdvancedHeuristics:
