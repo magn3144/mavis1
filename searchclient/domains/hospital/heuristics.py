@@ -51,4 +51,17 @@ class HospitalAdvancedHeuristics:
     def h(self, state: h_state.HospitalState, goal_description: h_goal_description.HospitalGoalDescription) -> int:
 
         # Your heuristic goes here...
-        return 0
+        count = 0
+        for (position, char, is_positive) in goal_description.agent_goals:
+            if not state.agent_at(position):
+                count += 1
+
+        agentDistances = 0
+
+        for i in range(0, len(goal_description.agent_goals)):
+            (x1, y1), _, _ = goal_description.agent_goals[i]
+            (x2, y2), _ = state.agent_positions[i]
+            distance = abs(x2 - x1) + abs(y2 - y1)
+            agentDistances += distance
+
+        return agentDistances + (count*5)
