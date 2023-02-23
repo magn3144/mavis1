@@ -136,17 +136,16 @@ class PushAction:
 
     def result(self, agent_index: int, state: h_state.HospitalState):
         current_agent_position, agent_char = state.agent_positions[agent_index]
-        current_box_position, box_char = state.box_positions[box_index]
-        new_agent_position = self.calculate_positions(current_agent_position)
-        new_box_position = self.calculate_positions(current_box_position)
+        current_box_position = pos_add(current_agent_position, self.agent_delta)
+        box_index, box_char = state.box_at(current_box_position)
+        _, new_agent_position = self.calculate_positions(current_agent_position)
+        _, new_box_position = self.calculate_positions(current_box_position)
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
+        print("Agent pos: ")
+        print(state.agent_positions[agent_index])
+        print("Box pos: ")
+        print(state.box_positions[box_index])
         state.box_positions[box_index] = (new_box_position, box_char)
-
-
-    def result(self, agent_index: int, state: h_state.HospitalState):
-        current_agent_position, agent_char = state.agent_positions[agent_index]
-        new_agent_position = self.calculate_positions(current_agent_position)
-        state.agent_positions[agent_index] = (new_agent_position, agent_char)
 
     def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
         current_agent_position, _ = state.agent_positions[agent_index]
