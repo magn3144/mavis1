@@ -127,21 +127,26 @@ class PushAction:
     def calculate_positions(self, current_box_position: Position) -> Position:
         return current_box_position, pos_add(current_box_position, self.box_delta)
 
-    def is_applicable(self, agent_index: int, box_index: int, state: h_state.HospitalState) -> bool:
-        current_agent_position, current_box_position = state.agent_positions[agent_index], state.box_positions[box_index]
-        _, box_char = state.box_at(current_box_position)
-        _, agent_char = state.agent_positions[agent_index]
-        new_agent_position = self.calculate_positions(current_agent_position)
-        new_box_position = self.calculate_positions(current_box_position)
-        return state.free_at(new_agent_position) and state.free_at(new_box_position) and box_char==agent_char
+    def is_applicable(self, agent_index: int, state: h_state.HospitalState) -> bool:
+        current_agent_position = state.agent_positions[agent_index]
+        current_box_position = pos_add(current_agent_position[0], self.agent_delta)
 
-    def result(self, agent_index: int, box_index: int, state: h_state.HospitalState):
+        _, new_box_position = self.calculate_positions(current_box_position)
+        return state.free_at(new_box_position)
+
+    def result(self, agent_index: int, state: h_state.HospitalState):
         current_agent_position, agent_char = state.agent_positions[agent_index]
         current_box_position, box_char = state.box_positions[box_index]
         new_agent_position = self.calculate_positions(current_agent_position)
         new_box_position = self.calculate_positions(current_box_position)
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
         state.box_positions[box_index] = (new_box_position, box_char)
+
+
+    def result(self, agent_index: int, state: h_state.HospitalState):
+        current_agent_position, agent_char = state.agent_positions[agent_index]
+        new_agent_position = self.calculate_positions(current_agent_position)
+        state.agent_positions[agent_index] = (new_agent_position, agent_char)
 
     def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
         current_agent_position, _ = state.agent_positions[agent_index]
