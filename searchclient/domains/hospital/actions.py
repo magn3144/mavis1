@@ -126,7 +126,7 @@ class PushAction:
         self.name = "Push({}, {})".format(agent_direction, box_direction)
         self.solution_path = ""
 
-    def calculate_positions(self, current_box_position: Position) -> Position:
+    def calculate_positions(self, current_box_position: Position):
         # Returns (new_agent_position, new_box_position)
         return current_box_position, pos_add(current_box_position, self.box_delta)
 
@@ -158,25 +158,14 @@ class PushAction:
 
     def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
         current_agent_position, _ = state.agent_positions[agent_index]
-        box_index, box_char = state.box_at(self.box_position)
-        current_box_position, _ = state.box_positions[box_index]
-        new_agent_position, new_box_position = self.calculate_positions(self.box_position)
+        current_box_position = pos_add(current_agent_position, self.agent_delta)
+        box_index, box_char = state.box_at(current_box_position)
+        new_agent_position, new_box_position = self.calculate_positions(current_box_position)
         # New agent position is a destination because it is unoccupied before the action and occupied after the action.
         destinations = [new_agent_position, new_box_position]
         # The boxed that are moved
         boxes_moved = [box_index]
         return destinations, boxes_moved
-
-    # def conflicts(self, agent_index: int, box_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
-    #     current_agent_position, _ = state.agent_positions[agent_index]
-    #     new_agent_position = self.calculate_positions(current_agent_position)
-    #     current_box_position, _ = state.box_positions[box_index]
-    #     new_agent_position, new_box_position = self.calculate_positions(self.box_position)
-    #     # New agent position is a destination because it is unoccupied before the action and occupied after the action.
-    #     destinations = [new_agent_position]
-    #     # Since a Move action never moves a box, we can just return the empty value.
-    #     boxes_moved = [new_box_position]
-    #     return destinations, boxes_moved
 
     def __repr__(self):
         return self.name
