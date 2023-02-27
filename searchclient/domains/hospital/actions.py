@@ -154,7 +154,7 @@ class PushAction:
         new_agent_position, new_box_position = self.calculate_positions(current_box_position)
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
         state.box_positions[box_index] = (new_box_position, box_char)
-        print(f"Player: {state.agent_positions[agent_index]}, Box: {state.box_positions[box_index]}", file=sys.stderr)
+        #print(f"Player: {state.agent_positions[agent_index]}, Box: {state.box_positions[box_index]}", file=sys.stderr)
 
     def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
         current_agent_position, _ = state.agent_positions[agent_index]
