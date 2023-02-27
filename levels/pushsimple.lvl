@@ -1,17 +1,21 @@
 #domain
 hospital
 #levelname
-MAPF00
+pushsimple
 #colors
 blue: 0, A
 #initial
-++++
-+ A+
-+ 0+
-++++
+++++++
++    +
++ A  +
++    +
++   0+
+++++++
 #goal
-++++
-+A0+
-+  +
-++++
+++++++
++    +
++A0  +
++    +
++    +
+++++++
 #end
