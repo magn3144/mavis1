@@ -44,11 +44,19 @@ class HospitalState:
         action: actions.AnyAction = None
     ):
         self.level = level
+        # self.initial_level = copy.deepcopy(level)
         self.agent_positions = agent_positions
+        # self.initial_agent_positions = copy.deepcopy(agent_positions)
         self.box_positions = box_positions
+        # self.initial_box_positions = copy.deepcopy(box_positions)
         self.parent = parent
         self.action = action
         self.path_cost = 0 if parent is None else parent.path_cost + 1
+
+    # def reset(self):
+    #     self.level = copy.deepcopy(self.initial_level)
+    #     self.agent_positions = copy.deepcopy(self.initial_agent_positions)
+    #     self.box_positions = copy.deepcopy(self.initial_box_positions)
 
     def agent_at(self, position: tuple[int, int]) -> tuple[int, str]:
         """
@@ -92,16 +100,26 @@ class HospitalState:
         return not self.level.wall_at(position) and \
                self.agent_at(position)[1] == '' and \
                self.box_at(position)[1] == ''
+    
+    def print_path(self):
+        """Prints the path from the initial state to this state"""
+        if self.parent is not None:
+            self.parent.print_path()
+        print(self, file=sys.stderr)
 
     def extract_plan(self) -> list[actions.AnyAction]:
-        print("exstract_plan", file=sys.stderr)
+        #print("exstract_plan", file=sys.stderr)
         """Extracts a plan from the search tree by walking backwards through the search tree"""
+        self.print_path()
         reverse_plan = []
         current_node = self
         while current_node.parent is not None:
             reverse_plan.append(current_node.action)
             current_node = current_node.parent
+        
         reverse_plan.reverse()
+        print(reverse_plan, file=sys.stderr)
+
         return reverse_plan
 
     def is_conflicting(self, joint_action: list[actions.AnyAction]) -> bool:
@@ -153,9 +171,7 @@ class HospitalState:
         new_state = self.result(plan[0])
         for joint_action in plan[1:]:
             new_state = new_state.result(joint_action)
-            print(f"Agent pos: {self.agent_positions[0]}")
-            print(f"Box pos: {self.box_positions[0]}")
-            print("\n")
+            # print(new_state, file=sys.stderr)
         return new_state
 
     def is_applicable(self, joint_action: list[actions.AnyAction]) -> bool:
