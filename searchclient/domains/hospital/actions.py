@@ -17,6 +17,7 @@ from __future__ import annotations
 from utils import pos_add, pos_sub
 from typing import Union, Tuple
 import domains.hospital.state as h_state
+import sys
 
 direction_deltas = {
     'N': (-1, 0),
@@ -153,6 +154,7 @@ class PushAction:
         new_agent_position, new_box_position = self.calculate_positions(current_box_position)
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
         state.box_positions[box_index] = (new_box_position, box_char)
+        print(f"Player: {state.agent_positions[agent_index]}, Box: {state.box_positions[box_index]}", file=sys.stderr)
 
     def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
         current_agent_position, _ = state.agent_positions[agent_index]

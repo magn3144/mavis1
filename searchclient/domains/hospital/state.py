@@ -15,6 +15,7 @@ from __future__ import annotations
 import copy
 import itertools
 import random
+import sys
 # Set fixed seed for random shuffle (ensures deterministic runs)
 random.seed(a=0, version=2)
 
@@ -93,6 +94,7 @@ class HospitalState:
                self.box_at(position)[1] == ''
 
     def extract_plan(self) -> list[actions.AnyAction]:
+        print("exstract_plan", file=sys.stderr)
         """Extracts a plan from the search tree by walking backwards through the search tree"""
         reverse_plan = []
         current_node = self
