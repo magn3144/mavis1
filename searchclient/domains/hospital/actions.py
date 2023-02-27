@@ -123,7 +123,7 @@ class PushAction:
         # self.box_position = boxposition
 
         self.agent_delta, self.box_delta = direction_deltas_push.get((agent_direction, box_direction))
-        self.name = "Push({}, {})".format(agent_direction, box_direction)
+        self.name = "Push({},{})".format(agent_direction, box_direction)
         self.solution_path = ""
 
     def calculate_positions(self, current_box_position: Position):

@@ -108,7 +108,6 @@ class HospitalState:
         print(self, file=sys.stderr)
 
     def extract_plan(self) -> list[actions.AnyAction]:
-        #print("exstract_plan", file=sys.stderr)
         """Extracts a plan from the search tree by walking backwards through the search tree"""
         self.print_path()
         reverse_plan = []
