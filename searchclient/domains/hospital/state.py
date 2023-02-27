@@ -151,6 +151,9 @@ class HospitalState:
         new_state = self.result(plan[0])
         for joint_action in plan[1:]:
             new_state = new_state.result(joint_action)
+            print(f"Agent pos: {self.agent_positions[0]}")
+            print(f"Box pos: {self.box_positions[0]}")
+            print("\n")
         return new_state
 
     def is_applicable(self, joint_action: list[actions.AnyAction]) -> bool:
