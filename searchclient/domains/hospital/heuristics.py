@@ -54,25 +54,33 @@ class HospitalAdvancedHeuristics:
         #     if not state.agent_at(position):
         #         count += 1
 
+        for (position, char, is_positive) in goal_description.box_goals:
+            if not state.box_at(position):
+                count += 1
+
         agentDistances = 0
         boxDistances = 0
 
-        # for i in range(0, len(goal_description.agent_goals)):
-        #     (x1, y1), _, _ = goal_description.agent_goals[i]
-        #     (x2, y2), _ = state.agent_positions[i]
-        #     distance = abs(x2 - x1) + abs(y2 - y1)
-        #     agentDistances += distance
+        for i in range(0, len(goal_description.box_goals)):
+            (x1, y1), _, _ = goal_description.box_goals[i]
+            ((x2, y2), _) = state.agent_positions[0]
+            distance = abs(x2 - x1) + abs(y2 - y1)
+            agentDistances += distance
         
         for box_goal in goal_description.box_goals:
             goal_char = box_goal[1]
             for box_position, box_char in state.box_positions:
-                min_distance = APPROX_INFINITY
+                min_distance = 10000
+                boxMatchesGoal = False
                 if box_char == goal_char:
-                    (x1, y1), _, _ = box_goal
-                    x2, y2 = box_position
+                    (x2, y2), _, _ = box_goal
+                    x1, y1 = box_position
                     distance = abs(x2 - x1) + abs(y2 - y1)
                     if distance < min_distance:
                         min_distance = distance
-            boxDistances += min_distance
+                        boxMatchesGoal = True
+                if boxMatchesGoal:
+                    boxDistances += min_distance
 
-        return agentDistances + boxDistances + count * 2
+        # print((agentDistances, boxDistances, count), file=sys.stderr)
+        return agentDistances + boxDistances + count

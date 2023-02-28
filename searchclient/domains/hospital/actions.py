@@ -267,5 +267,3 @@ DEFAULT_HOSPITAL_ACTION_LIBRARY = [
     PullAction("W", "S"),
     PullAction("W", "W")
 ]
-
-
