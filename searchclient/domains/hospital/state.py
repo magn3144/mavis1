@@ -44,19 +44,11 @@ class HospitalState:
         action: actions.AnyAction = None
     ):
         self.level = level
-        # self.initial_level = copy.deepcopy(level)
         self.agent_positions = agent_positions
-        # self.initial_agent_positions = copy.deepcopy(agent_positions)
         self.box_positions = box_positions
-        # self.initial_box_positions = copy.deepcopy(box_positions)
         self.parent = parent
         self.action = action
         self.path_cost = 0 if parent is None else parent.path_cost + 1
-
-    # def reset(self):
-    #     self.level = copy.deepcopy(self.initial_level)
-    #     self.agent_positions = copy.deepcopy(self.initial_agent_positions)
-    #     self.box_positions = copy.deepcopy(self.initial_box_positions)
 
     def agent_at(self, position: tuple[int, int]) -> tuple[int, str]:
         """
@@ -101,15 +93,15 @@ class HospitalState:
                self.agent_at(position)[1] == '' and \
                self.box_at(position)[1] == ''
     
-    def print_path(self):
-        """Prints the path from the initial state to this state"""
-        if self.parent is not None:
-            self.parent.print_path()
-        print(self, file=sys.stderr)
+    # def print_path(self):
+    #     """Prints the path from the initial state to this state"""
+    #     if self.parent is not None:
+    #         self.parent.print_path()
+    #     print(self, file=sys.stderr)
 
     def extract_plan(self) -> list[actions.AnyAction]:
         """Extracts a plan from the search tree by walking backwards through the search tree"""
-        self.print_path()
+        # self.print_path()
         reverse_plan = []
         current_node = self
         while current_node.parent is not None:

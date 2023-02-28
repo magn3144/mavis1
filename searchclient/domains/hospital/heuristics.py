@@ -47,21 +47,32 @@ class HospitalAdvancedHeuristics:
         # pre-computing lookup tables or other acceleration structures
         pass
 
-
     def h(self, state: h_state.HospitalState, goal_description: h_goal_description.HospitalGoalDescription) -> int:
-
         # Your heuristic goes here...
         count = 0
-        for (position, char, is_positive) in goal_description.agent_goals:
-            if not state.agent_at(position):
-                count += 1
+        # for (position, char, is_positive) in goal_description.agent_goals:
+        #     if not state.agent_at(position):
+        #         count += 1
 
         agentDistances = 0
+        boxDistances = 0
 
-        for i in range(0, len(goal_description.agent_goals)):
-            (x1, y1), _, _ = goal_description.agent_goals[i]
-            (x2, y2), _ = state.agent_positions[i]
-            distance = abs(x2 - x1) + abs(y2 - y1)
-            agentDistances += distance
+        # for i in range(0, len(goal_description.agent_goals)):
+        #     (x1, y1), _, _ = goal_description.agent_goals[i]
+        #     (x2, y2), _ = state.agent_positions[i]
+        #     distance = abs(x2 - x1) + abs(y2 - y1)
+        #     agentDistances += distance
+        
+        for box_goal in goal_description.box_goals:
+            goal_char = box_goal[1]
+            for box_position, box_char in state.box_positions:
+                min_distance = APPROX_INFINITY
+                if box_char == goal_char:
+                    (x1, y1), _, _ = box_goal
+                    x2, y2 = box_position
+                    distance = abs(x2 - x1) + abs(y2 - y1)
+                    if distance < min_distance:
+                        min_distance = distance
+            boxDistances += min_distance
 
-        return agentDistances + (count*5)
+        return agentDistances + boxDistances + count * 2
