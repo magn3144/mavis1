@@ -55,7 +55,7 @@ def graph_search(
     # goal_description.is_goal(node) - Returns true if the state is a goal state.
     # For debugging, remember that you can use print(node, file=sys.stderr) to get a representation of the state.
     # You should also take a look at the frontiers in the strategies folder to see which methods they expose
-
+    
     # first initializes the frontier with the initial state,
     frontier.add(initial_state)
 
@@ -76,6 +76,8 @@ def graph_search(
 
         # Check if goal state
         if goal_description.is_goal(current_state):
+            #goal
+            #print(f"Generated states is contained here:  {print_search_status(expanded, frontier)} ")
             return True, current_state.extract_plan()
 
         # If the state is not a goal state, the function adds it to the expanded set
@@ -100,7 +102,6 @@ def graph_search(
     # If no solution is found, the function returns a tuple with the boolean False and an empty list for the plan.
     # Return False if no solution is found
     return False, []
-
     return_fixed_solution = True
     
     if return_fixed_solution:
