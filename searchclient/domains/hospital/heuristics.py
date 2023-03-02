@@ -116,5 +116,5 @@ class HospitalAdvancedHeuristics:
                     boxDistances += min_distance
 
         # print((agentDistances, boxDistances, count), file=sys.stderr)
-        return agentDistances + boxDistances + count
-        # return agentDistances*(1/5) + boxDistances*10 + (count)
+        # return agentDistances + boxDistances + count
+        return agentDistances*(1/5) + boxDistances*10 + (count)
