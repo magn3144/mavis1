@@ -47,6 +47,39 @@ class HospitalAdvancedHeuristics:
         # pre-computing lookup tables or other acceleration structures
         pass
 
+    '''
+    function improve_heuristic(state, goal_description) returns an integer
+      count <-- 0
+      agentDistances <-- 0
+      boxDistances <-- 0
+        
+      for position in box_goals: 
+        if not position in state.boxes: 
+          count += 1
+      
+      for i <-- 0 to length(box_goals): 
+        (x1, y1) <-- box_goals[i]
+        (x2, y2) <-- agent_positions
+        distance <-- abs(x2- x1) + abs(y2 - y1) 
+        agentDistances <-- distance
+        
+      for box_goal in goal_description: 
+        for box_position, box_char in state.box_positions: 
+          min_distance <-- inf
+          boxMatchesGoal = False
+          if box_char is goal_char: 
+            (x1, y1) <-- box_position
+            (x2, y2) <-- box_goal
+            distance <-- abs(x2 - x1) + abs(y2 - y1)
+            if distance < min_distance: 
+              min_distance <-- distance
+              boxMatchesGoal <-- True
+            if boxMatchesGoal is True: 
+              boxDistances += min_distance
+      
+      return agentDistances + boxDistances + count
+    '''
+
     def h(self, state: h_state.HospitalState, goal_description: h_goal_description.HospitalGoalDescription) -> int:
         # Your heuristic goes here...
         count = 0
@@ -55,7 +88,7 @@ class HospitalAdvancedHeuristics:
         #         count += 1
 
         for (position, char, is_positive) in goal_description.box_goals:
-            if not state.box_at(position):
+            if state.box_at(position)[0] != -1:
                 count += 1
 
         agentDistances = 0
@@ -83,4 +116,5 @@ class HospitalAdvancedHeuristics:
                     boxDistances += min_distance
 
         # print((agentDistances, boxDistances, count), file=sys.stderr)
-        return agentDistances + boxDistances + count
+        # return agentDistances + boxDistances + count
+        return agentDistances*(1/5) + boxDistances*10 + (count)
