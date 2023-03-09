@@ -15,6 +15,7 @@ from __future__ import annotations
 import copy
 import itertools
 import random
+import sys
 # Set fixed seed for random shuffle (ensures deterministic runs)
 random.seed(a=0, version=2)
 
@@ -91,15 +92,25 @@ class HospitalState:
         return not self.level.wall_at(position) and \
                self.agent_at(position)[1] == '' and \
                self.box_at(position)[1] == ''
+    
+    # def print_path(self):
+    #     """Prints the path from the initial state to this state"""
+    #     if self.parent is not None:
+    #         self.parent.print_path()
+    #     print(self, file=sys.stderr)
 
     def extract_plan(self) -> list[actions.AnyAction]:
         """Extracts a plan from the search tree by walking backwards through the search tree"""
+        # self.print_path()
         reverse_plan = []
         current_node = self
         while current_node.parent is not None:
             reverse_plan.append(current_node.action)
             current_node = current_node.parent
+        
         reverse_plan.reverse()
+        print(reverse_plan, file=sys.stderr)
+
         return reverse_plan
 
     def is_conflicting(self, joint_action: list[actions.AnyAction]) -> bool:

@@ -142,5 +142,5 @@ class FrontierGreedy(FrontierBestFirst):
 
     def f(self, state: h_state.HospitalState, goal_description: h_goal_description.HospitalGoalDescription) -> int:
         # Your code here...
-        return self.heuristic.evaluate(state, goal_description)
+        return self.heuristic.h(state, goal_description)
         # raise NotImplementedError()

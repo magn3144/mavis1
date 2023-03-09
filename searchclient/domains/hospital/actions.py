@@ -17,12 +17,27 @@ from __future__ import annotations
 from utils import pos_add, pos_sub
 from typing import Union, Tuple
 import domains.hospital.state as h_state
+import sys
 
 direction_deltas = {
     'N': (-1, 0),
     'S': (1, 0),
     'E': (0, 1),
     'W': (0, -1),
+}
+direction_deltas_push = {
+    ('N', 'N'): ((-1, 0), (-1, 0)),
+    ('N', 'E'): ((-1, 0), (0, 1)),
+    ('N', 'W'): ((-1, 0), (0, -1)),
+    ('S', 'S'): ((1, 0), (1, 0)),
+    ('S', 'E'): ((1, 0), (0, 1)),
+    ('S', 'W'): ((1, 0), (0, -1)),
+    ('E', 'N'): ((0, 1), (-1, 0)),
+    ('E', 'S'): ((0, 1), (1, 0)),
+    ('E', 'E'): ((0, 1), (0, 1)),
+    ('W', 'N'): ((0, -1), (-1, 0)),
+    ('W', 'S'): ((0, -1), (1, 0)),
+    ('W', 'W'): ((0, -1), (0, -1)),
 }
 
 # An action class must implement three types be a valid action:
@@ -103,33 +118,46 @@ class MoveAction:
 
 class PushAction:
 
-    def __init__(self, boxposition, box_direction):
-        # self.agent_delta = direction_deltas.get(agent_direction)
-        self.box_position = boxposition
-        self.box_delta = direction_deltas.get(box_direction)
-        self.name = "Push({}, {})".format(boxposition, box_direction)
+    def __init__(self, agent_direction, box_direction):
+        self.agent_delta, self.box_delta = direction_deltas_push.get((agent_direction, box_direction))
+        self.name = "Push({},{})".format(agent_direction, box_direction)
+        self.solution_path = ""
 
-    def calculate_positions(self, current_box_position: Position) -> Position:
-        return current_box_position, pos_add(current_box_position, self.box_direction)
+    def calculate_positions(self, current_box_position: Position):
+        # Returns (new_agent_position, new_box_position)
+        return current_box_position, pos_add(current_box_position, self.box_delta)
 
-    def is_applicable(self, agent_index: int,  state: h_state.HospitalState) -> bool:
-        new_agent_position, new_box_position = self.calculate_positions(self.box_position)
-        box_index, box_char = state.box_at(self.box_position)
-        _, agent_char = state.agent_positions[agent_index]
-        return state.free_at(new_box_position) and box_char==agent_char
+    def is_applicable(self, agent_index: int, state: h_state.HospitalState) -> bool:
+        current_agent_position, agent_char = state.agent_positions[agent_index]
+        current_box_position = pos_add(current_agent_position, self.agent_delta)
+        new_agent_position, new_box_position = self.calculate_positions(current_box_position)
+
+        box_index, box_char = state.box_at(current_box_position)
+        found_box = box_index != -1
+
+        if not found_box:
+            return False
+
+        agent_color = state.level.colors[agent_char]
+        box_color = state.level.colors[box_char]
+        matching_colors = agent_color == box_color
+
+        return state.free_at(new_box_position) and matching_colors
 
     def result(self, agent_index: int, state: h_state.HospitalState):
         current_agent_position, agent_char = state.agent_positions[agent_index]
-        box_index, box_char = state.box_at(self.box_position)
-        new_agent_position, new_box_position = self.calculate_positions(self.box_position)
+        current_box_position = pos_add(current_agent_position, self.agent_delta)
+        box_index, box_char = state.box_at(current_box_position)
+        new_agent_position, new_box_position = self.calculate_positions(current_box_position)
         state.agent_positions[agent_index] = (new_agent_position, agent_char)
         state.box_positions[box_index] = (new_box_position, box_char)
+        #print(f"Player: {state.agent_positions[agent_index]}, Box: {state.box_positions[box_index]}", file=sys.stderr)
 
     def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
         current_agent_position, _ = state.agent_positions[agent_index]
-        box_index, box_char = state.box_at(self.box_position)
-        current_box_position, _ = state.box_positions[box_index]
-        new_agent_position, new_box_position = self.calculate_positions(self.box_position)
+        current_box_position = pos_add(current_agent_position, self.agent_delta)
+        box_index, box_char = state.box_at(current_box_position)
+        new_agent_position, new_box_position = self.calculate_positions(current_box_position)
         # New agent position is a destination because it is unoccupied before the action and occupied after the action.
         destinations = [new_agent_position, new_box_position]
         # The boxed that are moved
@@ -140,7 +168,59 @@ class PushAction:
         return self.name
 
 
-AnyAction = Union[NoOpAction, MoveAction, PushAction] # Only for type hinting
+class PullAction:
+
+    def __init__(self, agent_direction, box_direction):
+        self.agent_delta, self.box_delta = direction_deltas_push.get((agent_direction, box_direction))
+        self.name = "Pull({},{})".format(agent_direction, box_direction)
+        self.solution_path = ""
+
+    def calculate_positions(self, current_agent_position: Position):
+        # Returns (new_agent_position, new_box_position)
+        return pos_add(current_agent_position, self.agent_delta), current_agent_position
+
+    def is_applicable(self, agent_index: int, state: h_state.HospitalState) -> bool:
+        current_agent_position, agent_char = state.agent_positions[agent_index]
+        current_box_position = pos_sub(current_agent_position, self.box_delta)
+        new_agent_position, new_box_position = self.calculate_positions(current_agent_position)
+
+        box_index, box_char = state.box_at(current_box_position)
+        found_box = box_index != -1
+
+        if not found_box:
+            return False
+
+        agent_color = state.level.colors[agent_char]
+        box_color = state.level.colors[box_char]
+        matching_colors = agent_color == box_color
+
+        return state.free_at(new_agent_position) and matching_colors
+
+    def result(self, agent_index: int, state: h_state.HospitalState):
+        current_agent_position, agent_char = state.agent_positions[agent_index]
+        current_box_position = pos_sub(current_agent_position, self.box_delta)
+        box_index, box_char = state.box_at(current_box_position)
+        new_agent_position, new_box_position = self.calculate_positions(current_agent_position)
+        state.agent_positions[agent_index] = (new_agent_position, agent_char)
+        state.box_positions[box_index] = (new_box_position, box_char)
+        #print(f"Player: {state.agent_positions[agent_index]}, Box: {state.box_positions[box_index]}", file=sys.stderr)
+
+    def conflicts(self, agent_index: int, state: h_state.HospitalState) -> tuple[list[Position], list[Position]]:
+        current_agent_position, _ = state.agent_positions[agent_index]
+        current_box_position = pos_sub(current_agent_position, self.box_delta)
+        box_index, box_char = state.box_at(current_box_position)
+        new_agent_position, new_box_position = self.calculate_positions(current_agent_position)
+        # New agent position is a destination because it is unoccupied before the action and occupied after the action.
+        destinations = [new_agent_position, new_box_position]
+        # The boxed that are moved
+        boxes_moved = [box_index]
+        return destinations, boxes_moved
+
+    def __repr__(self):
+        return self.name
+
+
+AnyAction = Union[NoOpAction, MoveAction, PushAction, PullAction] # Only for type hinting
 
 
 # An action library for the multi agent pathfinding
@@ -161,8 +241,29 @@ DEFAULT_HOSPITAL_ACTION_LIBRARY = [
     MoveAction("E"),
     MoveAction("W"),
     # Add Push and Pull actions here
-    PushAction()
+    PushAction("N", "N"),
+    PushAction("N", "E"),
+    PushAction("N", "W"),
+    PushAction("S", "S"),
+    PushAction("S", "E"),
+    PushAction("S", "W"),
+    PushAction("E", "N"),
+    PushAction("E", "S"),
+    PushAction("E", "E"),
+    PushAction("W", "N"),
+    PushAction("W", "S"),
+    PushAction("W", "W"),
+
+    PullAction("N", "N"),
+    PullAction("N", "E"),
+    PullAction("N", "W"),
+    PullAction("S", "S"),
+    PullAction("S", "E"),
+    PullAction("S", "W"),
+    PullAction("E", "N"),
+    PullAction("E", "S"),
+    PullAction("E", "E"),
+    PullAction("W", "N"),
+    PullAction("W", "S"),
+    PullAction("W", "W")
 ]
-
-
-
