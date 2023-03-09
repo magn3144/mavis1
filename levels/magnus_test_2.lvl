@@ -1,0 +1,18 @@
+#domain
+hospital
+#levelname
+magnus_test_2
+#colors
+blue: 0, A
+green: B
+#initial
+++++++++
++0    A+
++B     +
+++++++++
+#goal
+++++++++
++     B+
++A     +
+++++++++
+#end
