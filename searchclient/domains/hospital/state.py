@@ -49,6 +49,7 @@ class HospitalState:
         self.parent = parent
         self.action = action
         self.path_cost = 0 if parent is None else parent.path_cost + 1
+        
 
     def agent_at(self, position: tuple[int, int]) -> tuple[int, str]:
         """
@@ -109,7 +110,7 @@ class HospitalState:
             current_node = current_node.parent
         
         reverse_plan.reverse()
-        print(reverse_plan, file=sys.stderr)
+        #print(reverse_plan, file=sys.stderr)
 
         return reverse_plan
 
