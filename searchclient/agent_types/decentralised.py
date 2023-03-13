@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 
 from search_algorithms.graph_search import graph_search
 from utils import *
@@ -25,49 +26,54 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
     # use 'parse_response(read_line())' to read back an array of booleans indicating whether each individual action
     #   in the joint action succeeded.
 
-    planning_success, plan = graph_search(initial_state, action_set, goal_description, frontier)
+    # planning_success, plan = graph_search(initial_state, action_set, goal_description, frontier)
 
-    #print(plan)
-    if not planning_success:
-        print("Unable to solve level.", file=sys.stderr)
-        return
+    # if not planning_success:
+    #     print("Unable to solve level.", file=sys.stderr)
+    #     return
 
-    print(f"Found solution of length {len(plan)}", file=sys.stderr)
+    # print(f"Found solution of length {len(plan)}", file=sys.stderr)
 
     num_agents = level.num_agents
 
-
-
-
     # Compute a plan for each agent
-    plans = []
+    pi = []
     for i in range(num_agents):
         agent_postion, agent_char = initial_state.agent_positions[i]
-        #print("")
-        #print(f"her er agent= {agent_postion}")
-        #print("")
-        #agent_idx = initial_state.agent_at(agent_postion)
         agent_color = level.colors[agent_char]
         monochrome_problem = initial_state.color_filter(agent_color)
-        planning_success, pi  = graph_search(monochrome_problem, action_set, goal_description, frontier)
-        #print("")
-        #print(f"her er pi = {pi}")
-        #print("")
-        plans.append(pi)
+        planning_success, pi_i = graph_search(monochrome_problem, action_set, goal_description, frontier)
+        pi.append(pi_i)
 
 
-    while all(plans):
-        for joint_action in plan:
+    while any(pi):
 
-            # Send the joint action to the server
-            print(joint_action_to_string(joint_action), flush=True)
-            # Uncomment the below line to print the executed actions to the command line for debugging purposes
-            # print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
+        for i in range(num_agents):
+            if len(pi[i])==0:
+                pi[i] = "NoOp"
+            else:
+                pi[i] = pi[0]
 
-            # Read back whether the agents succeeded in performing the joint action
-            execution_successes = parse_response(read_line())
-            if False in execution_successes:
-                print("Execution failed! Stopping...", file=sys.stderr)
-                # One of the agents failed to execute their action.
-                # This should not occur in classical planning and we therefore just abort immediately
-                return
+        for i in range(len(pi)):
+            for joint_action in pi[i]:
+                print("joint_action: ", file=sys.stderr)
+
+                # Send the joint action to the server
+                print(joint_action, file=sys.stderr)
+                print(joint_action_to_string(joint_action), flush=True)
+                # Uncomment the below line to print the executed actions to the command line for debugging purposes
+                # print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
+
+                # Read back whether the agents succeeded in performing the joint action
+                execution_successes = parse_response(read_line())
+                if False in execution_successes:
+                    print("Execution failed! Stopping...", file=sys.stderr)
+                    # One of the agents failed to execute their action.
+                    # This should not occur in classical planning and we therefore just abort immediately
+                    return
+
+
+        for i in range(num_agents):
+            # print("Runs!")
+            if len(execution_successes[i])==0 and len(pi[i])==0:
+                pi[i] = pi[i][1:]
