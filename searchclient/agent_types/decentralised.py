@@ -54,6 +54,8 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
             else:
                 pi[i] = pi[0]
 
+        __return = False
+
         for i in range(len(pi)):
             for joint_action in pi[i]:
                 print("joint_action: ", file=sys.stderr)
@@ -62,18 +64,26 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
                 print(joint_action, file=sys.stderr)
                 print(joint_action_to_string(joint_action), flush=True)
                 # Uncomment the below line to print the executed actions to the command line for debugging purposes
-                # print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
+                print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
 
                 # Read back whether the agents succeeded in performing the joint action
                 execution_successes = parse_response(read_line())
+                print("execution_successes: ", file=sys.stderr)
+                print(execution_successes, file=sys.stderr)
                 if False in execution_successes:
+                    # print("Number of actions that fail: {}".format(sum(execution_successes)))
                     print("Execution failed! Stopping...", file=sys.stderr)
                     # One of the agents failed to execute their action.
                     # This should not occur in classical planning and we therefore just abort immediately
+                    __return = True
                     return
+                if execution_successes[i] and pi[i]:
+                    pi[i] = pi[i][1:]
+
+            if __return:
+                return
 
 
         for i in range(num_agents):
-            # print("Runs!")
-            if len(execution_successes[i])==0 and len(pi[i])==0:
-                pi[i] = pi[i][1:]
+            if execution_successes[i] and len(pi[i])==0:
+                pi[i] = pi[i].pop(0)
