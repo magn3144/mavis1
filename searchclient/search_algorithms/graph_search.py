@@ -77,7 +77,7 @@ def graph_search(
         # Check if goal state
         if goal_description.is_goal(current_state):
             #Printing generated states:
-            print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
+            # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
             return True, current_state.extract_plan()
 
         # If the state is not a goal state, the function adds it to the expanded set
