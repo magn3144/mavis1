@@ -105,7 +105,7 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["bfs", "goalcount", "default", "decentralised", "levels/SAD1.lvl"]
+        parameters = ["astar", "goalcount", "default", "decentralised", "../levels/MAsimple1.lvl"]
     else:
         parameters = parse_command_line_arguments()
 
