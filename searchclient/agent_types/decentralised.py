@@ -18,7 +18,8 @@ from utils import *
 
 def decentralised_agent_type(level, initial_state, action_library, goal_description, frontier):
     # Create an action set where all agents can perform all actions
-    action_set = [action_library] * level.num_agents
+    # action_set = [action_library] * level.num_agents
+    action_set = [action_library]
 
     # Here you should implement the DECENTRALISED-AGENTS algorithm.
     # You can use the 'classic' agent type as a starting point for how to communicate with the server, i.e.
@@ -37,50 +38,47 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
     num_agents = level.num_agents
 
     # Compute a plan for each agent
-    pi = []
+    pi = [None] * num_agents
+    planning_success = None
+
     for i in range(num_agents):
         agent_postion, agent_char = initial_state.agent_positions[i]
         agent_color = level.colors[agent_char]
         monochrome_problem = initial_state.color_filter(agent_color)
-        planning_success, pi_i = graph_search(monochrome_problem, action_set, goal_description, frontier)
-        pi.append(pi_i)
+        monochrome_goal_description = goal_description.color_filter(agent_color)
+        planning_success, pi_i = graph_search(monochrome_problem, action_set, monochrome_goal_description, frontier)
+        pi[i] = [p[0] for p in pi_i]
 
+    # planning_success, pi = graph_search(initial_state, action_set, goal_description, frontier)
 
-    while len(pi)!=0:
+    if not planning_success:
+        print("Unable to solve level.", file=sys.stderr)
+        return
 
-        actions = [""]*num_agents
+    print("Pi: ", file=sys.stderr)
+    print(pi, file=sys.stderr)
+    print(len(pi), file=sys.stderr)
+
+    while len(pi) > 0:
+
+        actions = [""] * num_agents
         for i in range(num_agents):
             if len(pi[i])==0:
                 actions[i] = "NoOp"
             else:
-                actions[i] = pi[0]
+                actions[i] = pi[i][0]
 
-        __return = False
-
-        for i in range(len(actions)):
-            for joint_action in actions[i]:
-                #print("joint_action: ", file=sys.stderr)
-
-                # Send the joint action to the server
-                #print(joint_action, file=sys.stderr)
-                print(joint_action_to_string(joint_action), flush=True)
-                # Uncomment the below line to print the executed actions to the command line for debugging purposes
-                #print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
-
-                # Read back whether the agents succeeded in performing the joint action
-                execution_successes = parse_response(read_line())
-                #print("execution_successes: ", file=sys.stderr)
-                #print(execution_successes, file=sys.stderr)
-                if execution_successes[i] and pi[i]:
-                    pi[i] = pi[i][1:]
-                if False in execution_successes:
-                    # print("Number of actions that fail: {}".format(sum(execution_successes)))
+        print(f"actions     :   {actions}")
+        print("")
+        # Send the joint action to the server
+        print(joint_action_to_string(actions), flush=True)
+        execution_successes = parse_response(read_line())
+        if False in execution_successes:
                     print("Execution failed! Stopping...", file=sys.stderr)
                     # One of the agents failed to execute their action.
                     # This should not occur in classical planning and we therefore just abort immediately
-                    __return = True
                     return
 
-            if __return:
-                return
-
+        for i in range(num_agents):
+            if execution_successes[i] and len(pi[i]) == 0:
+                pi[i] = pi[i].pop(0)
