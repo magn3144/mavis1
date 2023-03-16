@@ -37,43 +37,52 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
     num_agents = level.num_agents
 
     # Compute a plan for each agent
-    pi = []
+    pi = [None] * num_agents
+    planning_success = None
+
     for i in range(num_agents):
         agent_postion, agent_char = initial_state.agent_positions[i]
         agent_color = level.colors[agent_char]
         monochrome_problem = initial_state.color_filter(agent_color)
-        planning_success, pi_i = graph_search(monochrome_problem, action_set, goal_description, frontier)
-        pi.append(pi_i)
+        monochrome_goal_description = goal_description.color_filter(agent_color)
+        planning_success, pi_i = graph_search(monochrome_problem, action_set, monochrome_goal_description, frontier)
+        pi[i] = pi_i
 
+    planning_success, pi = graph_search(initial_state, action_set, goal_description, frontier)
 
-    while any(pi):
+    if not planning_success:
+        print("Unable to solve level.", file=sys.stderr)
+        return
 
+    print("Pi: ", file=sys.stderr)
+    print(pi, file=sys.stderr)
+    print(len(pi), file=sys.stderr)
+
+    while len(pi) > 0:
+
+        actions = [""] * num_agents
         for i in range(num_agents):
             if len(pi[i])==0:
-                pi[i] = "NoOp"
+                actions[i] = "NoOp"
             else:
-                pi[i] = pi[0]
+                actions[i] = pi[0]
 
-        for i in range(len(pi)):
-            for joint_action in pi[i]:
-                print("joint_action: ", file=sys.stderr)
+        for joint_action in pi:
 
-                # Send the joint action to the server
-                print(joint_action, file=sys.stderr)
-                print(joint_action_to_string(joint_action), flush=True)
-                # Uncomment the below line to print the executed actions to the command line for debugging purposes
-                # print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
+            # Send the joint action to the server
+            print(joint_action_to_string(joint_action), flush=True)
+            # Uncomment the below line to print the executed actions to the command line for debugging purposes
+            print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
 
-                # Read back whether the agents succeeded in performing the joint action
-                execution_successes = parse_response(read_line())
-                if False in execution_successes:
-                    print("Execution failed! Stopping...", file=sys.stderr)
-                    # One of the agents failed to execute their action.
-                    # This should not occur in classical planning and we therefore just abort immediately
-                    return
-
+            # Read back whether the agents succeeded in performing the joint action
+            execution_successes = parse_response(read_line())
+            if False in execution_successes:
+                print("Execution failed! Stopping...", file=sys.stderr)
+                # One of the agents failed to execute their action.
+                # This should not occur in classical planning and we therefore just abort immediately
+                return
 
         for i in range(num_agents):
-            # print("Runs!")
-            if len(execution_successes[i])==0 and len(pi[i])==0:
-                pi[i] = pi[i][1:]
+            if execution_successes[i] and len(pi[i]) == 0:
+                pi[i] = pi[i].pop(0)
+
