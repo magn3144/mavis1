@@ -27,6 +27,9 @@ from strategies.bestfirst import FrontierAStar, FrontierGreedy
 from utils import read_line
 
 
+debug = True
+
+
 def load_level_file_from_server():
     lines = []
     while True:
@@ -101,8 +104,12 @@ def parse_command_line_arguments():
 
 
 if __name__ == '__main__':
+    if debug:
+        parameters = ["astar", "goalcount", "default", "decentralised", "../levels/MAsimple1.lvl"]
+    else:
+        parameters = parse_command_line_arguments()
 
-    strategy_name, heuristic_name, action_library_name, agent_type_name, level_path, robot_ip = parse_command_line_arguments()
+    strategy_name, heuristic_name, action_library_name, agent_type_name, level_path = parameters
 
     # Construct client name by removing all missing arguments and joining them together into a single string
     name_components = [agent_type_name, strategy_name, heuristic_name, action_library_name]
@@ -178,4 +185,3 @@ if __name__ == '__main__':
         non_deterministic_agent_type(level, initial_state, action_library, goal_description)
     else:
         print(f"Unrecognized agent type! {agent_type_name}", file=sys.stderr)
-

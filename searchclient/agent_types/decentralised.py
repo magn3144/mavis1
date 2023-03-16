@@ -39,15 +39,14 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
 
     # Compute a plan for each agent
     pi = [None] * num_agents
-    planning_success = None
 
     for i in range(num_agents):
         agent_postion, agent_char = initial_state.agent_positions[i]
         agent_color = level.colors[agent_char]
         monochrome_problem = initial_state.color_filter(agent_color)
         monochrome_goal_description = goal_description.color_filter(agent_color)
-        planning_success, pi_i = graph_search(monochrome_problem, action_set, monochrome_goal_description, frontier)
-        pi[i] = [p[0] for p in pi_i]
+        planning_success, pi[i] = graph_search(monochrome_problem, action_set, monochrome_goal_description, frontier)
+        pi[i] = [pi[i][j][0] for j in range(len(pi[i]))]
 
     # planning_success, pi = graph_search(initial_state, action_set, goal_description, frontier)
 
@@ -59,26 +58,34 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
     print(pi, file=sys.stderr)
     print(len(pi), file=sys.stderr)
 
-    while len(pi) > 0:
-
-        actions = [""] * num_agents
+    while any(pi):
+        
+        actions = [None] * num_agents
+        #execution_successes = [""] * len(actions)
         for i in range(num_agents):
+            print(f"pi[i]:   {pi[i]}")
+            print("")
             if len(pi[i])==0:
-                actions[i] = "NoOp"
+                actions[i] = action_library[0]
             else:
                 actions[i] = pi[i][0]
 
         print(f"actions     :   {actions}")
         print("")
         # Send the joint action to the server
+        
         print(joint_action_to_string(actions), flush=True)
         execution_successes = parse_response(read_line())
-        if False in execution_successes:
-                    print("Execution failed! Stopping...", file=sys.stderr)
-                    # One of the agents failed to execute their action.
-                    # This should not occur in classical planning and we therefore just abort immediately
-                    return
 
+        #print(f"All actions succeeded!" * all(execution_successes) + f"Some action(s) failed: {execution_successes}" * (not all(execution_successes)), file=sys.stderr)
+        if False in execution_successes:
+            print("Execution failed! Stopping...", file=sys.stderr)
+            # One of the agents failed to execute their action.
+            # This should not occur in classical planning and we therefore just abort immediately
+            return
+
+    
         for i in range(num_agents):
-            if execution_successes[i] and len(pi[i]) == 0:
-                pi[i] = pi[i].pop(0)
+            if execution_successes[i] and len(pi[i])>0:
+                pi[i] = pi[i][1:]
+

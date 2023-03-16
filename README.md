@@ -48,6 +48,10 @@ The folder 'agent_types' contains multiple different type of agents which can be
 - 'helper' - A planning agent using the helper agent algorithm. Select by adding "-helper" to the command line.
 - 'non_deterministic' - A planning agent using AND-OR-GRAPH-SEACH with a broken executor. Select by adding "-nondeterministic" to the command line.
 
+```bash
+$ java -jar server.jar -g -s 300 -t 180 -c "python searchclient/searchclient.py -decentralised" -l levels/SAD1.lvl
+```
+
 ## Debugging
 
 As communication with the java server is performed over stdout, print(<something>) does not work directly, and debuggers will also fail.
