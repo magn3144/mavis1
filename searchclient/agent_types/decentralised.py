@@ -19,7 +19,8 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
     current_state = initial_state
 
     # Create an action set where all agents can perform all actions
-    action_set = [action_library] * level.num_agents
+    # action_set = [action_library] * level.num_agents
+    action_set = [action_library]
 
     # Here you should implement the DECENTRALISED-AGENTS algorithm.
     # You can use the 'classic' agent type as a starting point for how to communicate with the server, i.e.
