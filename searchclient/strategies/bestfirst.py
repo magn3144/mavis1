@@ -130,7 +130,11 @@ class FrontierAStar(FrontierBestFirst):
         # print("This is the current state: ")
         # print(goal_description, file = sys.stderr)
         # return self.heuristic.h(state, goal_description) + goal_description
-        return self.heuristic.h(state, goal_description) + 1
+        path_length = 0
+        while state.parent is not None:
+            path_length += 1
+            state = state.parent
+        return self.heuristic.h(state, goal_description) + path_length
         # raise NotImplementedError()
 
 
