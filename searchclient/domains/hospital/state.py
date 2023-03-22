@@ -140,23 +140,18 @@ class HospitalState:
 
         return False
 
-    def result(self, joint_action: list[actions.AnyAction], debug=False):
-        successes = []
+    def result(self, joint_action: list[actions.AnyAction]):
         """Computes the state resulting from applying a joint action to this state"""
         new_state = HospitalState(self.level, copy.copy(self.agent_positions), copy.copy(self.box_positions),
                                   self, joint_action)
 
         for (agent_index, action) in enumerate(joint_action):
-            if debug:
-                successes.append(action.is_applicable(agent_index, new_state))
             action.result(agent_index, new_state)
 
         # Sorting the box positions ensures that the boxes are indistinguishable which significantly
         # reduces the search space size.
         new_state.box_positions.sort()
 
-        if debug:
-            return new_state, successes
         return new_state
 
     def result_of_plan(self, plan: list[list[actions.AnyAction]]):

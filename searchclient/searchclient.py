@@ -105,7 +105,7 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["bfs", "goalcount", "default", "decentralised", "levels/MAsimple2.lvl", "_"]
+        parameters = ["bfs", "goalcount", "default", "helper", "levels/MAsimple3.lvl", "_"]
     else:
         parameters = parse_command_line_arguments()
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     elif agent_type_name == 'decentralised':
         decentralised_agent_type(level, initial_state, action_library, goal_description, frontier, debug=debug)
     elif agent_type_name == 'helper':
-        helper_agent_type(level, initial_state, action_library, goal_description, frontier)
+        helper_agent_type(level, initial_state, action_library, goal_description, frontier, debug=debug)
     elif agent_type_name == 'nondeterministic':
         non_deterministic_agent_type(level, initial_state, action_library, goal_description)
     else:

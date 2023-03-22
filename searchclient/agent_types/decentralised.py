@@ -57,7 +57,8 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
         joint_action_string = joint_action_to_string(actions)
         print("joint_action_string: " + joint_action_string, file=sys.stderr)
         if debug:
-            current_state, action_success = current_state.result(actions, debug=True)
+            action_success = [actions[i].is_applicable(i, current_state) for i in range(len(actions))]
+            current_state = current_state.result(actions, debug=True)
             print(current_state, file=sys.stderr)
         else:
             # Execute the joint action and get wether each individual action succeeded
