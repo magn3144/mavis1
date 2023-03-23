@@ -43,7 +43,37 @@ def and_or_graph_search(initial_state: state.HospitalState, action_set: list[lis
     # The expanded set contains the states that have already been explored,
     # and the visited set contains the states that are in the frontier or have already been explored
 
+    while frontier:
+        # Next state from frontier
+        current_state = frontier.pop()
 
+        # Check if goal state
+        if goal_description.is_goal(current_state):
+            # Printing generated states:
+            # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
+            return True, []
+
+        if current_state in expanded:
+            return False, []
+
+        # If the state is not a goal state, the function adds it to the expanded set
+        # Add to expanded set
+        expanded.add(current_state)
+        # and generates the applicable actions for the state.
+
+        applicable_actions = current_state.get_applicable_actions(action_set)
+
+        # Get successor states for each applicable action
+        for action in applicable_actions:
+            next_state = current_state.result(action)
+
+            # Check if next state has been visited
+            if next_state in visited:
+                continue
+
+            # Add the next state to the frontier and visited sets
+            frontier.add(next_state)
+            visited.add(next_state)
 
 
 
@@ -52,6 +82,25 @@ def and_or_graph_search(initial_state: state.HospitalState, action_set: list[lis
     # where the or_plan is a dictionary with states as keys and actions as values
     raise NotImplementedError()
 
+
+def or_search(state, path, goal_description, action_set):
+    # Check if goal state
+    if goal_description.is_goal(state):
+        # Printing generated states:
+        # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
+        return True, []
+    if state is in path:
+        return False, []
+
+    applicable_actions = state.get_applicable_actions(action_set)
+    for action in applicable_actions:
+        plan = and_search()
+        if plan != False:
+            return action, plan
+
+
+def and_search():
+    print()
 
 
 # A global variable used to keep track of the start time of the current search
