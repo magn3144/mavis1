@@ -90,7 +90,7 @@ def or_search(state, path, goal_description, action_set, results):
         # Printing generated states:
         # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
         return True, []
-    if state is in path:
+    if state in path:
         return False, []
 
     applicable_actions = state.get_applicable_actions(action_set)
