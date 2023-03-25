@@ -13,6 +13,7 @@
 
 import sys
 import time
+import memory
 from copy import deepcopy
 import domains.hospital.actions as actions
 import domains.hospital.state as state
@@ -83,7 +84,7 @@ def and_or_graph_search(initial_state: state.HospitalState, action_set: list[lis
     raise NotImplementedError()
 
 
-def or_search(state, path, goal_description, action_set):
+def or_search(state, path, goal_description, action_set, results):
     # Check if goal state
     if goal_description.is_goal(state):
         # Printing generated states:
@@ -94,13 +95,18 @@ def or_search(state, path, goal_description, action_set):
 
     applicable_actions = state.get_applicable_actions(action_set)
     for action in applicable_actions:
-        plan = and_search()
+        plan = and_search(results[state, action], [state, path], goal_description, action_set, results)
         if plan != False:
             return action, plan
 
 
-def and_search():
-    print()
+def and_search(states, path, goal_description, action_set, results):
+    plan = []
+    for i, state in enumerate(states):
+        plan.append(or_search(state, path, goal_description, action_set, results))
+        if plan[0] == False:
+            return False, []
+    return plan
 
 
 # A global variable used to keep track of the start time of the current search
