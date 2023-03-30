@@ -27,7 +27,7 @@ from strategies.bestfirst import FrontierAStar, FrontierGreedy
 from utils import read_line
 
 
-debug = True
+debug = False
 
 
 def load_level_file_from_server():
@@ -105,11 +105,12 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["astar", "goalcount", "default", "decentralised", "../levels/MAsimple1.lvl"]
+        parameters = ["bfs", "goalcount", "default", "decentralised", "levels/MAsimple2.lvl", "_"]
     else:
         parameters = parse_command_line_arguments()
 
-    strategy_name, heuristic_name, action_library_name, agent_type_name, level_path = parameters
+    print(parameters, file=sys.stderr)
+    strategy_name, heuristic_name, action_library_name, agent_type_name, level_path, _ = parameters
 
     # Construct client name by removing all missing arguments and joining them together into a single string
     name_components = [agent_type_name, strategy_name, heuristic_name, action_library_name]
@@ -178,7 +179,7 @@ if __name__ == '__main__':
     if agent_type_name == 'classic':
         classic_agent_type(level, initial_state, action_library, goal_description, frontier)
     elif agent_type_name == 'decentralised':
-        decentralised_agent_type(level, initial_state, action_library, goal_description, frontier)
+        decentralised_agent_type(level, initial_state, action_library, goal_description, frontier, debug=debug)
     elif agent_type_name == 'helper':
         helper_agent_type(level, initial_state, action_library, goal_description, frontier)
     elif agent_type_name == 'nondeterministic':
