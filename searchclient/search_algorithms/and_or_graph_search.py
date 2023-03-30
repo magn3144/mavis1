@@ -13,59 +13,163 @@
 
 import sys
 from copy import deepcopy
+import domains.hospital.actions as actions
+import domains.hospital.state as state
 
 
 def and_or_graph_search(initial_state, action_set, goal_description, results):
 
-    def or_search(state, path):
-        if goal_description.is_goal(state):
-            return {}
-        if state in path:
-            return "failure"
 
-        #policy = {}
-        #applicable_actions = state.get_applicable_actions(action_set)
-        #print(f"action_s   :   {applicable_actions}")
-        print("")
+#def is_goal(state):
+#    return goal_description.is_goal(initial_state)
+
+#def actions(state):
+#    for action in action_set:
+#        return [a for a in action if a.is_applicable(0, state)]
+
+
+    def or_search(state, path):
+
+        if goal_description.is_goal(state):
+            return 0, {}
+
+        #print(f"state :  {state}")
+        #print("")
+        #print(f"path   :   {path}")
+        if state in path:
+            return None, False
+
+        
+        best_worst_case_length = None
+        best_plan = False
+        """
+        applicabble_a = []
+        for action in action_set:
+            applicabble_a.append([a for a in action if a.is_applicable(0, state)])
+        """
         applicable_a = []
         for action in action_set:
             #print(f" action_is_applicable: {state.is_applicable(action)}")
             for a in action:
-    
+
                 if a.is_applicable(0, state):
                     applicable_a.append(a)
-        #print(f"applicable_a : {applicable_a}")
+
+        #print(applicable_a)
         for action in applicable_a:
-            next_state = state.result([action])
-            #print(f" action   :  {[i for i in action]}")
-            print("")
-            #print(f" state, action   :  {[next_state for next_state in results(state, action)]}")
-            #print(f"path1 :  {path}")
-            plan = and_search(results(next_state, [action]), path + [next_state])
-            print("")
-            print("")
-            #print(f"plan :  {plan}")
-            if plan != "failure":
-                print(plan)
-                return {next_state: action, **plan}
-        return "failure"
-
-    def and_search(states, path):
-        plans = []
-        for state in states:
-            print("")
-            #print(f"path2 :  {path}")
-            plan = or_search(state, path)
-            #print(f"plan   :   {plan}")
-            print("")
-            if plan == "failure":
-                return "failure"
-
-            if plan != "failure":
-                plans.append(plan)
+            action = [action]
+            result_states = results(state, action)
+            worst_case_length, plan = and_search(result_states, [state] + path)
+            if plan != False:
+                if best_worst_case_length is None or worst_case_length < best_worst_case_length:
+                    best_worst_case_length = worst_case_length
+                #print(f"min_depth :   {min_depth}")
+                #print("")
+                    best_plan = {state: action, **plan}
+                    return best_worst_case_length, best_plan
         
+        return 0, False
+
+
+    def and_search(states, path):   
+        
+        total_worst_case_length = 0
+        combined_plan = {}
+        for state in states:
+            worst_case_length, plan = or_search(state, path)
+            #print(plan)
+            #print(f"plan1 : {plan[1]}")
+            #print("")
+            #print(f"plan : {plan}")
+            #print("")
+            if plan == False:
+                return None, False
+            max_depth = max(total_worst_case_length, worst_case_length)
+            combined_plan.update(plan)
+        #print("")
+        #print(f"combined_plan    :   {combined_plan.values()}")
+        return max_depth, combined_plan
+
+        """
+        conditionals = {}
+        for plan in plans:
+            print(f"plan    :   {plan}")
+            print("")
+            for state, action in plan.items():
+                if state not in conditionals:
+                    conditionals[state] = action
+        return plans
+        """
+
 
     return or_search(initial_state, [])
+        
+
+
+
+"""
+
+    print (goal_description.is_goal(initial_state))
+    return goal_description.is_goal(initial_state)
+
+def or_search(state, path, depth):
+    if goal_description.is_goal(state):
+        return {}
+    if state in path or depth == 0:
+        return None
+
+    #policy = {}
+    #applicable_actions = state.get_applicable_actions(action_set)
+    #print(f"action_s   :   {applicable_actions}")
+    print("")
+    applicable_a = []
+    policy = {}
+    for action in action_set:
+        #print(f" action_is_applicable: {state.is_applicable(action)}")
+        for a in action:
+
+            if a.is_applicable(0, state):
+                applicable_a.append(a)
+    #print(f"applicable_a : {applicable_a}")
+    for action in applicable_a:
+        next_state = state.result([action])
+        #print(f" action   :  {[i for i in action]}")
+        print("")
+        #print(f" state, action   :  {[next_state for next_state in results(state, action)]}")
+        #print(f"path1 :  {path}")
+        plan = and_search(results(next_state, [action]), path + [next_state], depth - 1)
+        print("")
+        print("")
+        #print(f"plan :  {plan}")
+        if plan is not None:
+            #print(**plan)
+            policy.update( {next_state: action, **plan} )
+            print(f"ahahahha hah :  {policy}")
+    return None
+
+def and_search(states, path, depth):
+    policy = {}
+    for state in states:
+        print("")
+        #print(f"path2 :  {path}")
+        plan = or_search(state, path, depth - 1)    
+        #print(f"plan   :   {plan}")
+        print("")
+        if plan is None:
+            return None
+
+        policy.update(plan)
+        print(f"kafkafoafok :  {policy}")
+        return policy
+    max_depth = 5
+
+    for depth in range(max_depth + 1):
+        policy = or_search(initial_state, [], depth)
+        if policy is not None:
+            return {state: action, **plan}
+    return None
+"""      
+
 """
     # Here you should implement AND-OR-GRAPH-SEARCH. We are going to use a policy format, mapping from states to actions.
     # The algorithm should return a pair (worst_case_length, or_plan)
