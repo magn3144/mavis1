@@ -50,6 +50,8 @@ def non_deterministic_agent_type(level, initial_state, action_library, goal_desc
             break
 
         if current_state not in plan:
+            print(f"current_state   :   {current_state}")
+            print(f"plan   :   {plan}")
             # The agent reached a state not covered by the plan; AND-OR-GRAPH-SEARCH failed.
             print(f"Reached state not covered by plan!\n{current_state}", file=sys.stderr)
             break
