@@ -12,119 +12,71 @@
 # limitations under the License.
 
 import sys
-import time
-import memory
 from copy import deepcopy
 import domains.hospital.actions as actions
 import domains.hospital.state as state
-import domains.hospital.goal_description as goal_description
-import strategies.dfs as dfs
 
 
-def and_or_graph_search(initial_state: state.HospitalState, action_set: list[list[actions.AnyAction]],
-                        goal_description: goal_description.HospitalGoalDescription, frontier: dfs.FrontierDFS, results) -> tuple[bool, list[list[actions.AnyAction]]]:
-    global start_time
+def and_or_graph_search(initial_state, action_set, goal_description, results):
+    # def is_goal(state):
+    #    return goal_description.is_goal(initial_state)
 
-    # Set start time
-    start_time = time.time()
-    iterations = 0
-    frontier.prepare(goal_description)
+    # def actions(state):
+    #    for action in action_set:
+    #        return [a for a in action if a.is_applicable(0, state)]
 
-    # Clear the parent pointer and cost in order make sure that the initial state is a root node
-    initial_state.parent = None
-    initial_state.path_cost = 0
+    def or_search(state, path, depth):
 
-    # first initializes the frontier with the initial state,
-    frontier.add(initial_state)
+        if goal_description.is_goal(state):
+            return depth, {}
 
-    # creates two sets to keep track of the expanded and visited states
-    # Keep track of  expanded and visited states
-    expanded = set()
-    visited = set()
-    # The expanded set contains the states that have already been explored,
-    # and the visited set contains the states that are in the frontier or have already been explored
+        # print(f"state :  {state}")
+        # print("")
+        # print(f"path   :   {path}")
+        if state in path:
+            return float("inf"), "failure"
 
-    while frontier:
-        # Next state from frontier
-        current_state = frontier.pop()
+        min_depth = float('inf')
+        best_plan = "failure"
 
-        # Check if goal state
-        if goal_description.is_goal(current_state):
-            # Printing generated states:
-            # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
-            return True, []
+        applicable_a = []
+        for action in action_set:
+            # print(f" action_is_applicable: {state.is_applicable(action)}")
+            for a in action:
 
-        if current_state in expanded:
-            return False, []
+                if a.is_applicable(0, state):
+                    applicable_a.append(a)
 
-        # If the state is not a goal state, the function adds it to the expanded set
-        # Add to expanded set
-        expanded.add(current_state)
-        # and generates the applicable actions for the state.
+        for action in applicable_a:
+            action = [action]
+            result_states = results(state, action)
+            new_depth, plan = and_search(result_states, [state] + path, depth + 1)
+            if plan != "failure" and new_depth < min_depth:
+                min_depth = new_depth
+                # print(f"min_depth :   {min_depth}")
+                # print("")
+                best_plan = {state: action, **plan}
+                # print(f"best_plan  :   {best_plan}")
 
-        applicable_actions = current_state.get_applicable_actions(action_set)
+        return min_depth, best_plan
 
-        # Get successor states for each applicable action
-        for action in applicable_actions:
-            next_state = current_state.result(action)
+    def and_search(states, path, depth):
 
-            # Check if next state has been visited
-            if next_state in visited:
-                continue
+        max_depth = depth
+        combined_plan = {}
+        for state in states:
+            state_depth, plan = or_search(state, path, depth)
+            # print(plan)
+            # print(f"plan1 : {plan[1]}")
+            # print("")
+            # print(f"plan : {plan}")
+            # print("")
+            if plan == "failure":
+                return float("inf"), "failure"
+            max_depth = max(max_depth, state_depth)
+            combined_plan.update(plan)
+        print("")
+        print(f"combined_plan    :   {combined_plan.values()}")
+        return max_depth, combined_plan
 
-            # Add the next state to the frontier and visited sets
-            frontier.add(next_state)
-            visited.add(next_state)
-
-
-
-    # Here you should implement AND-OR-GRAPH-SEARCH. We are going to use a policy format, mapping from states to actions.
-    # The algorithm should return a pair (worst_case_length, or_plan)
-    # where the or_plan is a dictionary with states as keys and actions as values
-    raise NotImplementedError()
-
-
-def or_search(state, path, goal_description, action_set, results):
-    # Check if goal state
-    if goal_description.is_goal(state):
-        # Printing generated states:
-        # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
-        return True, []
-    if state in path:
-        return False, []
-
-    applicable_actions = state.get_applicable_actions(action_set)
-    for action in applicable_actions:
-        plan = and_search(results[state, action], [state, path], goal_description, action_set, results)
-        if plan != False:
-            return action, plan
-
-
-def and_search(states, path, goal_description, action_set, results):
-    plan = []
-    for i, state in enumerate(states):
-        plan.append(or_search(state, path, goal_description, action_set, results))
-        if plan[0] == False:
-            return False, []
-    return plan
-
-
-# A global variable used to keep track of the start time of the current search
-start_time = 0
-
-
-def print_search_status(expanded, frontier):
-    global start_time
-    if len(expanded) == 0:
-        start_time = time.time()
-    memory_usage_bytes = memory.get_usage()
-    # Replacing the generated comma thousands separators with dots is neither pretty nor locale aware but none of
-    # Pythons four different formatting facilities seems to handle this correctly!
-    num_expanded = f"{len(expanded):8,d}".replace(',', '.')
-    num_frontier = f"{frontier.size():8,d}".replace(',', '.')
-    num_generated = f"{len(expanded) + frontier.size():8,d}".replace(',', '.')
-    elapsed_time = f"{time.time() - start_time:3.3f}".replace('.', ',')
-    memory_usage_mb = f"{memory_usage_bytes / (1024*1024):3.2f}".replace('.', ',')
-    status_text = f"#Expanded: {num_expanded}, #Frontier: {num_frontier}, #Generated: {num_generated}," \
-                  f" Time: {elapsed_time} s, Memory: {memory_usage_mb} MB"
-    print(status_text, file=sys.stderr)
+    return or_search(initial_state, [], 0)
