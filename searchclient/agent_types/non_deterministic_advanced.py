@@ -58,7 +58,7 @@ CHANCE_OF_BROKEN_ACTION = 0.5
 
 def non_deterministic_advanced_agent_type(level, initial_state, action_library, goal_description):
     # Create an action set for a single agent.
-    action_set = [action_library]
+    action_set = [action_library] * level.num_agents
 
     # Call AND-OR-GRAPH-SEARCH to compute a conditional plan
     plan = and_or_graph_search(initial_state, action_set, goal_description, broken_results)
