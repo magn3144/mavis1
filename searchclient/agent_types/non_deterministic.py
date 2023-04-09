@@ -12,7 +12,8 @@
 # limitations under the License.
 
 import random
-from search_algorithms.and_or_graph_search import and_or_graph_search
+#from search_algorithms.and_or_graph_search import and_or_graph_search
+from search_algorithms.deepening_and_or_graph_search import and_or_graph_search
 from utils import *
 
 

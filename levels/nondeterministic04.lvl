@@ -1,0 +1,17 @@
+#domain
+hospital
+#levelname
+nondeterministic04
+#colors
+blue: 0
+#initial
++++++++++++++++++++
++0                +
++++             +++
++++++++++++++++++++
+#goal
++++++++++++++++++++
++                 +
++++            0+++
++++++++++++++++++++
+#end
