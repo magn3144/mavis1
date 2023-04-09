@@ -16,12 +16,28 @@ from search_algorithms.and_or_graph_search import and_or_graph_search
 from utils import *
 
 
+def get_broken_action(joint_action, action_library):
+    broken_action = []
+    for i, action in enumerate(joint_action):
+        if action == action_library[i][1]:
+            broken_action.append(action_library[i][3])
+        elif action == action_library[i][2]:
+            broken_action.append(action_library[i][4])
+        elif action == action_library[i][3]:
+            broken_action.append(action_library[i][2])
+        elif action == action_library[i][4]:
+            broken_action.append(action_library[i][1])
+        else:
+            broken_action.append(action)
+    return broken_action
+
+# IMPLEMENT BROKEN RESULTS FOR MULTI AGENT
 def broken_results(state, action, action_library):
     # Building the Results() function containing the indeterminism
     # If performing two of the same actions is possible from the state,
     # this result is added as a possible outcome..
 
-    # standard_case = state.result(action)
+    standard_case = state.result(action)
     # random_actions = state.get_applicable_actions(action_library * state.level.num_agents)
     # possible_states = [standard_case]
     # for random_action in random_actions:
@@ -31,22 +47,27 @@ def broken_results(state, action, action_library):
     #             possible_states.append(broken_case)
     
     # return possible_states
-    return [state.result(action), state]
+    broken_action = get_broken_action(action, action_library)
+    if state.is_applicable(broken_action):
+        broken_case = state.result(broken_action)
+        return [standard_case, broken_case]
+    return [standard_case]
+    # return [state.result(action), state]
 
-CHANCE_OF_RANDOM_ACTION = 0.5
+CHANCE_OF_BROKEN_ACTION = 0.5
 
 def non_deterministic_advanced_agent_type(level, initial_state, action_library, goal_description):
     # Create an action set for a single agent.
     action_set = [action_library]
 
     # Call AND-OR-GRAPH-SEARCH to compute a conditional plan
-    worst_case_length, plan = and_or_graph_search(initial_state, action_set, goal_description, broken_results)
+    plan = and_or_graph_search(initial_state, action_set, goal_description, broken_results)
 
-    if worst_case_length is None:
+    if plan is None:
         print("Failed to find strong plan!", file=sys.stderr)
         return
 
-    print("Found plan of worst-case length", worst_case_length, file=sys.stderr)
+    print("Found plan", file=sys.stderr)
 
     current_state = initial_state
 
@@ -65,9 +86,14 @@ def non_deterministic_advanced_agent_type(level, initial_state, action_library, 
 
         # Broken executor non-determinism: After performing action, roll dice to check whether
         # action will be no-op instead
-        is_broken = random.random() < CHANCE_OF_RANDOM_ACTION
-        if is_broken:
-            print(f"Ups! NoOp", flush=True, file=sys.stderr)
+        is_broken = random.random() < CHANCE_OF_BROKEN_ACTION
+        broken_action = get_broken_action(joint_action, action_set)
+        if is_broken and current_state.is_applicable(broken_action):
+            print(f"Ups! Wrong direction!", flush=True, file=sys.stderr)
+            print(joint_action_to_string(broken_action), flush=True, file=sys.stderr)
+            print(joint_action_to_string(broken_action), flush=True)
+            _ = parse_response(read_line())
+            current_state = current_state.result(broken_action)
         else:
             # Send the joint action to the server (also print it for help)
             print(joint_action_to_string(joint_action), flush=True, file=sys.stderr)

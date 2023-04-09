@@ -24,10 +24,10 @@ def and_or_graph_search(initial_state, action_set, goal_description, results):
     action_set = action_set * initial_state.level.num_agents
     max_depth = 15
     for i in range(2, max_depth):
-        policy, _ = or_search(initial_state, [], goal_description, action_set, results, {}, i)
-        if policy is not None:
-            return i, policy
-    return None, None
+        policy, cyclic = or_search(initial_state, [], goal_description, action_set, results, {}, i)
+        if policy is not None and not cyclic:
+            return policy
+    return None
 
 def or_search(state, path, goal_description, action_set, results, policy, depth):
     if goal_description.is_goal(state):
@@ -37,13 +37,14 @@ def or_search(state, path, goal_description, action_set, results, policy, depth)
     if depth == 0:
         return None, False
     applicable_actions = state.get_applicable_actions(action_set)
-    for action in applicable_actions:
+    all_actions_cyclic = True
+    for i, action in enumerate(applicable_actions):
         new_states = results(state, action, action_set)
-        temp_policy, cyclic = and_search(new_states, [state] + path, goal_description, action_set, results, policy, depth - 1)
-        if temp_policy is not None and not cyclic:
-            temp_policy[state] = action
-            print(state, file=sys.stderr)
-            return temp_policy, cyclic
+        policy, cyclic = and_search(new_states, [state] + path, goal_description, action_set, results, {}, depth - 1)
+        all_actions_cyclic = all_actions_cyclic and cyclic
+        if (policy is not None and not cyclic) or (all_actions_cyclic and i == len(applicable_actions) - 1):
+            policy[state] = action
+            return policy, cyclic
     return None, False
 
 def and_search(states, path, goal_description, action_set, results, policy, depth):
