@@ -31,20 +31,12 @@ def get_broken_action(joint_action, action_library):
             broken_action.append(action)
     return broken_action
 
-# IMPLEMENT BROKEN RESULTS FOR MULTI AGENT
 def broken_results(state, action, action_library):
     # Building the Results() function containing the indeterminism
     # If performing two of the same actions is possible from the state,
     # this result is added as a possible outcome..
 
     standard_case = state.result(action)
-    # random_actions = state.get_applicable_actions(action_library * state.level.num_agents)
-    # possible_states = [standard_case]
-    # for random_action in random_actions:
-    #     if state.is_applicable(random_action):
-    #         broken_case = state.result(random_action)
-    #         if broken_case not in possible_states:
-    #             possible_states.append(broken_case)
     
     # return possible_states
     broken_action = get_broken_action(action, action_library)
@@ -52,13 +44,12 @@ def broken_results(state, action, action_library):
         broken_case = state.result(broken_action)
         return [standard_case, broken_case]
     return [standard_case]
-    # return [state.result(action), state]
 
 CHANCE_OF_BROKEN_ACTION = 0.5
 
 def non_deterministic_advanced_agent_type(level, initial_state, action_library, goal_description):
-    # Create an action set for a single agent.
-    action_set = [action_library] * level.num_agents
+    # Create an action set for the agents without pull actions
+    action_set = [action_library[:17]] * level.num_agents
 
     # Call AND-OR-GRAPH-SEARCH to compute a conditional plan
     plan = and_or_graph_search(initial_state, action_set, goal_description, broken_results)

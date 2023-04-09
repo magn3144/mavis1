@@ -1,0 +1,21 @@
+#domain
+hospital
+#levelname
+magnus_and_or_6
+#colors
+blue: 0, A, B
+#initial
++++++
++0  +
++ +A+
++  B+
++   +
++++++
+#goal
++++++
++   +
++ +B+
++  A+
++   +
++++++
+#end

@@ -22,7 +22,7 @@ def and_or_graph_search(initial_state, action_set, goal_description, results):
     # where the or_plan is a dictionary with states as keys and actions as values
     
     action_set = action_set * initial_state.level.num_agents
-    max_depth = 15
+    max_depth = 25
     for i in range(2, max_depth):
         policy, cyclic = or_search(initial_state, [], goal_description, action_set, results, {}, i)
         if policy is not None and not cyclic:
