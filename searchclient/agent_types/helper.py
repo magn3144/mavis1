@@ -107,16 +107,15 @@ def helper_agent_type(level, initial_state, action_library, goal_description, fr
     current_state = initial_state
 
     # Create an action set where all agents can perform all actions
-    # action_set = [action_library] * level.num_agents
-    action_set = [action_library]
+    action_set = [[GenericNoOp()]] * num_agents
 
     # Implement the HELPER-AGENT algorithm.
     
-
     actor_index = 0
+    # Create an action set for the actor can perform all actions
+    action_set[actor_index] = action_library
 
-    # Monochrome goal description
-    #Create monochrome problem
+    # Create monochrome problem
     agent_character = level.initial_agent_positions[actor_index][1]
     agent_color = level.colors[agent_character]
     monochrome_problem = initial_state.color_filter(agent_color)
@@ -129,81 +128,58 @@ def helper_agent_type(level, initial_state, action_library, goal_description, fr
     subgoals_number = monochrome_goal_description.num_sub_goals()
     subgoals = goal_description.get_sub_goal(actor_index)
     # Search for the actor's individual plan and goal description)
-    result, actor_plan = graph_search(monochrome_problem, action_set, subgoals, frontier)
-    print(f" actor_plan        :   {actor_plan}")
+    planning_success, plan = graph_search(monochrome_problem, action_set, subgoals, frontier)
+    # Add NoOps to the plan to make it a valid joint action plan
+    for i in range(len(plan)):
+        plan[i].extend([GenericNoOp() for _ in range(num_agents - 1)])
     
-    pi = []
+
+    helper_characters = [agent_position[1] for agent_position in level.initial_agent_positions][1:]
+    
+    if not planning_success:
+        print("Unable to solve level.", file=sys.stderr)
+        return
+    print(f"Found solution of length {len(plan)}", file=sys.stderr)
+
+    i = 0
     # Loop through subgoals
-    for subgoal in actor_plan:
-        subgoal_goal_description = HospitalGoalDescription([subgoal], goals=monochrome_goal_description.goals)
-        planning_success, subplan = graph_search(current_state.color_filter(agent_color), action_set, subgoal_goal_description, frontier)
-        print(f" subplan? :    {subplan}")
-        pi += [subplan[j][0] for j in range(len(subplan))]
+    while i < len(plan):
+        joint_action = plan[i]
 
-        if not planning_success:
-            print("Planning failed for subgoal:", subgoal)
-            return
-        
-        while pi:
-            action = pi[0]
-            joint_action = [action] + [GenericNoOp()] * (num_agents - 1)
+        # Execute joint action if applicable
+        if joint_action[0].is_applicable(0, current_state):
+            current_state = current_state.result(joint_action)
+            print(current_state, file=sys.stderr)
+            # Execute the joint action and get wether each individual action succeeded
             joint_action_string = joint_action_to_string(joint_action)
-            print(f"joint_action_string   :  {joint_action_string}")
-            print("")
-            print("")
-
-            # Execute the joint action
             print(joint_action_string, flush=True)
-            action_success = parse_response(read_line())[0]
-            print(f"action_success   :   {action_success}")
-            print("")
-            print()
-
-            if action_success:
-                joint_action = [action] + [GenericNoOp()] * (num_agents - 1)
-                joint_action_string = joint_action_to_string(joint_action)
-                current_state = current_state.result(joint_action)
-                pi = pi[1:]
+            action_success = parse_response(read_line())
+            i += 1
+        else:
+            # If something is blocking its path, then request a helper to remove the obstacle
+            # Create a new goal description where the box or agent blocking agent-0's path should be removed
+            obstacle_position = pos_add(current_state.agent_positions[0][0], joint_action[0].agent_delta)
+            obstacle_char = current_state.object_at(obstacle_position)
+            negative_goal = (obstacle_position, obstacle_char, False)
+            helper_goal_description = goal_description.create_new_goal_description_of_same_type([negative_goal])
+            # Run the appropriate helper agent with the new goal description
+            # If the obstacle is an agent, then just get the agent index for that char
+            # If the obstacle is a box, then get the index of an agent with that color
+            if obstacle_char == '':
+                print("Error: No obstacle found at position", obstacle_position, file=sys.stderr)
+                return
+            if obstacle_char in helper_characters:
+                helper_agent_index = helper_characters.index(obstacle_char)
             else:
-                print(f"subplan nu:   {pi}")
-                print("")
-                print("")
-                conflict_positions, _ = current_state.agent_positions[actor_index]
-                print(f"conflict_positions:   {conflict_positions}")
-                print("")
-                print("")
-                excluded_positions = set(conflict_positions)
+                helper_agent_index = helper_characters.index(list(level.colors.keys())[list(level.colors.values()).index(level.colors[obstacle_char])]) + 1
+            action_set = [[GenericNoOp()]] * level.num_agents
+            action_set[helper_agent_index] = action_library
+            planning_success, plan_helper = graph_search(current_state, action_set, helper_goal_description, frontier)
+            current_state = current_state.result_of_plan(plan_helper)
+            print(current_state, file=sys.stderr)
 
-                #excluded_positions = set(conflict_positions + [pos for a in pi[1:] for pos in a.get_positions(current_state)])
-
-                helper_requests = []
-                for i in range(1, num_agents):
-                    helper_color = level.colors[level.initial_agent_positions[i][1]]
-                    negative_subgoals = create_negative_subgoals(excluded_positions, i, helper_color, level)
-                    helper_goal_description = goal_description.create_new_goal_description_of_same_type(negative_subgoals)
-                    helper_requests.append((i, helper_goal_description))
-
-                for helper_index, helper_goal_description in helper_requests:
-                    helper_action_set = [[GenericNoOp()]] * num_agents
-                    helper_action_set[helper_index] = action_library
-
-                    planning_success, helper_pi = graph_search(current_state, helper_action_set, helper_goal_description, frontier)
-                    helper_pi = [helper_pi[j][0] for j in range(len(helper_pi))]
-                    if not planning_success:
-                        print(f"Planning failed for helper {helper_index}")
-                        return
-
-                    while helper_pi:
-                        joint_action = helper_pi[0]
-                        joint_action_string = joint_action_to_string(joint_action)
-
-                        # Execute the joint action
-                        print(joint_action_string, flush=True)
-                        helper_action_success = parse_response(read_line())[helper_index]
-
-                        if helper_action_success:
-                            current_state, _ = current_state.result(joint_action)
-                            helper_pi = helper_pi[1:]
-                        else:
-                            print(f"Helper {helper_index} action failed")
-                            return
+            # Execute the joint action and get wether each individual action succeeded
+            for joint_action in plan_helper:
+                    joint_action_string = joint_action_to_string(joint_action)
+                    print(joint_action_string, flush=True)
+                    action_success = parse_response(read_line())

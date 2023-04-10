@@ -10,13 +10,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
 
 from search_algorithms.graph_search import graph_search
 from utils import *
 
 
-def decentralised_agent_type(level, initial_state, action_library, goal_description, frontier):
+def decentralised_agent_type(level, initial_state, action_library, goal_description, frontier, debug=False):
+    current_state = initial_state
+
     # Create an action set where all agents can perform all actions
     # action_set = [action_library] * level.num_agents
     action_set = [action_library]
@@ -26,66 +27,46 @@ def decentralised_agent_type(level, initial_state, action_library, goal_descript
     # use 'print(joint_action_to_string(joint_action), flush=True)' to send a joint_action to the server and
     # use 'parse_response(read_line())' to read back an array of booleans indicating whether each individual action
     #   in the joint action succeeded.
-
-    # planning_success, plan = graph_search(initial_state, action_set, goal_description, frontier)
-
-    # if not planning_success:
-    #     print("Unable to solve level.", file=sys.stderr)
-    #     return
-
-    # print(f"Found solution of length {len(plan)}", file=sys.stderr)
-
     num_agents = level.num_agents
-
-    # Compute a plan for each agent
     pi = [None] * num_agents
-
     for i in range(num_agents):
-        agent_postion, agent_char = initial_state.agent_positions[i]
-        agent_color = level.colors[agent_char]
+        agent_character = level.initial_agent_positions[i][1]
+        agent_color = level.colors[agent_character]
         monochrome_problem = initial_state.color_filter(agent_color)
+        print(f"monochrome problem for {agent_color} agent:", file=sys.stderr)
+        print(monochrome_problem, file=sys.stderr)
         monochrome_goal_description = goal_description.color_filter(agent_color)
+        print("goal description:", file=sys.stderr)
+        print(goal_description, file=sys.stderr)
+        print(f"monochrome goal description for {agent_color} agent:", file=sys.stderr)
+        print(monochrome_goal_description, file=sys.stderr)
         planning_success, pi[i] = graph_search(monochrome_problem, action_set, monochrome_goal_description, frontier)
         pi[i] = [pi[i][j][0] for j in range(len(pi[i]))]
 
-    # planning_success, pi = graph_search(initial_state, action_set, goal_description, frontier)
-
-    if not planning_success:
-        print("Unable to solve level.", file=sys.stderr)
-        return
-
-    print("Pi: ", file=sys.stderr)
-    print(pi, file=sys.stderr)
-    print(len(pi), file=sys.stderr)
-
+    print("----------------------------------------", file=sys.stderr)
+    print(current_state, file=sys.stderr)
     while any(pi):
-        
         actions = [None] * num_agents
-        #execution_successes = [""] * len(actions)
         for i in range(num_agents):
-            print(f"pi[i]:   {pi[i]}")
-            print("")
-            if len(pi[i])==0:
+            if len(pi[i]) == 0:
                 actions[i] = action_library[0]
             else:
                 actions[i] = pi[i][0]
 
-        print(f"actions     :   {actions}")
-        print("")
-        # Send the joint action to the server
-        
-        print(joint_action_to_string(actions), flush=True)
-        execution_successes = parse_response(read_line())
+        # Convert the joint action to a string
+        joint_action_string = joint_action_to_string(actions)
+        print("joint_action_string: " + joint_action_string, file=sys.stderr)
+        if debug:
+            current_state, action_success = current_state.result(actions, debug=True)
+            print(current_state, file=sys.stderr)
+        else:
+            # Execute the joint action and get wether each individual action succeeded
+            print(joint_action_string, flush=True)
+            action_success = parse_response(read_line())
 
-        #print(f"All actions succeeded!" * all(execution_successes) + f"Some action(s) failed: {execution_successes}" * (not all(execution_successes)), file=sys.stderr)
-        if False in execution_successes:
-            print("Execution failed! Stopping...", file=sys.stderr)
-            # One of the agents failed to execute their action.
-            # This should not occur in classical planning and we therefore just abort immediately
-            return
+        print(f"All actions succeeded!" * all(action_success) + f"Some action(s) failed: {action_success}" * (not all(action_success)), file=sys.stderr)
 
-    
+        # Update the plan for each agent
         for i in range(num_agents):
-            if execution_successes[i] and len(pi[i])>0:
+            if action_success[i] and len(pi[i]) > 0:
                 pi[i] = pi[i][1:]
-

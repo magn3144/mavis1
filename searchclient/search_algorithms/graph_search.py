@@ -20,6 +20,7 @@ import domains.hospital.actions as actions
 import domains.hospital.state as state
 import domains.hospital.goal_description as goal_description
 import strategies.bfs as bfs
+import strategies.bestfirst as astar
 
 from domains.hospital.actions import MoveAction
 

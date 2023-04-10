@@ -90,17 +90,6 @@ def and_or_graph_search(initial_state, action_set, goal_description, results):
         #print(f"combined_plan    :   {combined_plan.values()}")
         return total_worst_case_length, combined_plan
 
-        """
-        conditionals = {}
-        for plan in plans:
-            print(f"plan    :   {plan}")
-            print("")
-            for state, action in plan.items():
-                if state not in conditionals:
-                    conditionals[state] = action
-        return plans
-        """
-
     depth = 0
     while True:
         worst_case_length, plan = or_search(initial_state, [], depth)
