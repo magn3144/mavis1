@@ -54,6 +54,15 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
     robot.say('I am executing plan. Please watch out!')
 
     # Implement your solution here!
+    Solvable, plan = graph_search(initial_state, action_library, goal_description, frontier)
+
+    ### Example of plan
+    # [[Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)],
+    # [Move(E)], [Move(S)], [Move(E)], [Move(S)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Push(S, S)]]
+
+    for action in plan:
+        action = action[0]
+
 
     # Wait until the robot is done speaking
     time.sleep(3)

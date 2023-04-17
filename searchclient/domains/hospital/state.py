@@ -110,7 +110,7 @@ class HospitalState:
             current_node = current_node.parent
         
         reverse_plan.reverse()
-        #print(reverse_plan, file=sys.stderr)
+        # print(reverse_plan, file=sys.stderr)
 
         return reverse_plan
 
