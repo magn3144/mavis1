@@ -62,6 +62,10 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
 
     for action in plan:
         action = action[0]
+        angle = robot.direction_mapping[action]
+        robot.turn(angle, block=False)
+        robot.forward(distance=0.6, block=False)
+        robot.declare_direction(action)
 
 
     # Wait until the robot is done speaking
