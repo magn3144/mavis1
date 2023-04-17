@@ -162,6 +162,7 @@ class RobotClient():
         message = msgpack.packb(listen_cmd, use_bin_type=True)
         self.client_socket.send(message)
         data = self.client_socket.recv(1024)
+        return data
 
 
 

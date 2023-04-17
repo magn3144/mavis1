@@ -50,6 +50,20 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
     # test the robots speech
     robot.stand()
 
+
+    #### Ver experimental implementation of whisper
+    cmd_input = robot.listen(3, playback=True)
+    if cmd_input=="Move left":
+        action = "Move(W)"
+    elif cmd_input=="Move right":
+        action = "Move(E)"
+    angle = robot.direction_mapping[action]
+    robot.turn(angle, block=False)
+    robot.forward(distance=0.6, block=False)
+    robot.declare_direction(action)
+
+
+
     # The robot will announce that it is executing the plan
     robot.say('I am executing plan. Please watch out!')
 
