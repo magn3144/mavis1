@@ -51,7 +51,7 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
     robot.stand()
 
 
-    #### Ver experimental implementation of whisper
+    #### Very experimental implementation of whisper
     cmd_input = robot.listen(3, playback=True)
     if cmd_input=="Move left":
         action = "Move(W)"

@@ -153,7 +153,34 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
     generated_states = {}
 
     # Your implementation of ALL-OPTIMAL-PLANS goes here...
-    raise NotImplementedError()
+    expanded = set()
+    visited = set()
+    while frontier:
+        current_node = frontier.pop()
+
+        """if goal_description.is_goal(current_state):
+            #Printing generated states:
+            # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
+            return True, current_state.extract_plan()"""
+
+        expanded.add(current_node)
+        current_state = current_node.state
+        applicable_actions = current_state.get_applicable_actions(action_set)
+
+        for action in applicable_actions:
+            next_state = current_node.result(action)
+
+            # if next_state in visited:
+            #     if next_state.path_cost == current_node.path_cost + 1:
+
+
+            # Add the next state to the frontier and visited sets
+            frontier.add(next_state)
+            visited.add(next_state)
+
+    # If no solution is found, the function returns a tuple with the boolean False and an empty list for the plan.
+    # Return False if no solution is found
+    return False, []
 
 
 # A global variable used to keep track of the start time of the current search
