@@ -170,9 +170,9 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
         for action in applicable_actions:
             next_state = current_node.result(action)
 
-            # if next_state in visited:
-            #     if next_state.path_cost == current_node.path_cost + 1:
-
+            if next_state in visited:
+                if next_state.path_cost == current_node.path_cost + 1:
+                    next_state.parents.append(current_node)
 
             # Add the next state to the frontier and visited sets
             frontier.add(next_state)
