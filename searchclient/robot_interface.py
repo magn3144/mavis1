@@ -299,23 +299,13 @@ if __name__ == '__main__':
     robot = RobotClient(ip)
 
     # test the robots listening
-    #robot.listen(3, playback=True)
+    # robot.listen(3, playback=True)
 
     # test the robots speech
     robot.stand()
 
     #robot.say('I am executing plan. Please watch out!')
     robot.say('I am connected!')
-
-    robot.forward(distance=0.6, block=False)
-    robot.declare_direction("Move(N)")
-    time.sleep(4)
-    robot.turn(1.5708, block=False)
-    time.sleep(4)
-    robot.say('Arian is the most cool boy i have seen.')
-    robot.forward(distance=0.6, block=False)
-    robot.declare_direction("Move(W)")
-    time.sleep(4)
 
     # shutdown the robot
     robot.shutdown()

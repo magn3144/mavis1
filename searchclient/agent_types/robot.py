@@ -37,7 +37,7 @@ import time
 
 
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
-
+    print(robot_ip)
     # Write your robot agent type here!
 
     # What follows is a small example of how to interact with the robot.
@@ -84,6 +84,16 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
 
     robot.forward(distance=0.6, block=False)
     robot.declare_direction("Move(N)")
+
+    # robot.forward(distance=0.6, block=False)
+    # robot.declare_direction("Move(N)")
+    # time.sleep(4)
+    # robot.turn(1.5708, block=False)
+    # time.sleep(4)
+    # robot.say('Arian is the most cool boy i have seen.')
+    # robot.forward(distance=0.6, block=False)
+    # robot.declare_direction("Move(W)")
+    # time.sleep(4)
 
     # Wait until the robot is done speaking
     time.sleep(3)

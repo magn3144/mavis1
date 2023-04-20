@@ -95,6 +95,7 @@ def parse_command_line_arguments():
                                   help='Use a goal recognition agent type.')
     agent_type_group.add_argument('-robot', action='store_const', dest='agent_type', const='robot',
                                   help='Use a physical robot!')
+    
 
 
     args = parser.parse_args()
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         parameters = parse_command_line_arguments()
 
     print(parameters, file=sys.stderr)
-    strategy_name, heuristic_name, action_library_name, agent_type_name, level_path, _ = parameters
+    strategy_name, heuristic_name, action_library_name, agent_type_name, level_path, robot_ip = parameters
 
     # Construct client name by removing all missing arguments and joining them together into a single string
     name_components = [agent_type_name, strategy_name, heuristic_name, action_library_name]
@@ -197,6 +198,7 @@ if __name__ == '__main__':
         if not robot_ip:
             raise ValueError("You must also specify which robot ip address to use when using the robot agent type!")
         try:
+            print(robot_ip)
             robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip)
         except Exception as e:
             print("Robot agent terminated with error", e)
