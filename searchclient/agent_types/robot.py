@@ -51,36 +51,39 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
     robot.stand()
 
 
-    #### Very experimental implementation of whisper
-    cmd_input = robot.listen(3, playback=True)
-    if cmd_input=="Move left":
-        action = "Move(W)"
-    elif cmd_input=="Move right":
-        action = "Move(E)"
-    angle = robot.direction_mapping[action]
-    robot.turn(angle, block=False)
-    robot.forward(distance=0.6, block=False)
-    robot.declare_direction(action)
+    # #### Very experimental implementation of whisper
+    # cmd_input = robot.listen(3, playback=True)
+    # if cmd_input=="Move left":
+    #     action = "Move(W)"
+    # elif cmd_input=="Move right":
+    #     action = "Move(E)"
+    # angle = robot.direction_mapping[action]
+    # robot.turn(angle, block=False)
+    # robot.forward(distance=0.6, block=False)
+    # robot.declare_direction(action)
 
 
 
     # The robot will announce that it is executing the plan
     robot.say('I am executing plan. Please watch out!')
 
-    # Implement your solution here!
-    Solvable, plan = graph_search(initial_state, action_library, goal_description, frontier)
+    # # Implement your solution here!
+    # Solvable, plan = graph_search(initial_state, action_library, goal_description, frontier)
 
     ### Example of plan
     # [[Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)],
     # [Move(E)], [Move(S)], [Move(E)], [Move(S)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Push(S, S)]]
 
-    for action in plan:
-        action = action[0]
-        angle = robot.direction_mapping[action]
-        robot.turn(angle, block=False)
-        robot.forward(distance=0.6, block=False)
-        robot.declare_direction(action)
+    # plan = [[ROBOT_ACTION_LIBRARY[0]]]
+    # for action in plan:
+    #     action = action[0]
+    #     angle = robot.direction_mapping[action]
+    #     robot.turn(angle, block=False)
+    #     robot.forward(distance=0.6, block=False)
+    #     robot.declare_direction(action)
 
+    robot.forward(distance=0.6, block=False)
+    robot.declare_direction("Move(N)")
 
     # Wait until the robot is done speaking
     time.sleep(3)
