@@ -94,7 +94,8 @@ def goal_recognition_agent_type(level, initial_state, action_library, goal_descr
     # from your previous helper and non deterministic agent types.
     # Note: Similarly to the non deterministic agent type, this is not a fast algorithm and you should therefore start
     # by testing on very small levels, such as those found in the assignment.
+    possible_goals = []
+    for i in range(goal_description.num_sub_goals()):
+        possible_goals.append(goal_description.get_sub_goal(i))
+    solution_found, solution_graph = all_optimal_plans(initial_state, action_library, possible_goals, frontier)
     raise NotImplementedError()
-
-
-

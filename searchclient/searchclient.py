@@ -30,7 +30,7 @@ from strategies.bestfirst import FrontierAStar, FrontierGreedy
 from utils import read_line
 
 
-debug = False
+debug = True
 
 
 def load_level_file_from_server():
@@ -113,7 +113,7 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["bfs", "goalcount", "default", "helper", "levels/MAsimple3.lvl", "_"]
+        parameters = ["bfs", "goalcount", "default", "goalrecognition", "levels/magnus_all_optimal_plans_3.lvl", "test_ip"]
     else:
         parameters = parse_command_line_arguments()
 

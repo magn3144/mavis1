@@ -89,6 +89,9 @@ class MultiParentNode:
 
     def __hash__(self):
         return hash(self.state)
+    
+    def __repr__(self):
+        return str(self.state)
 
 
 def visualize_solution_graph(solution_graph):
@@ -140,7 +143,7 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
       solution graph
     - if the search did not find a solution, the boolean should be False and the MultiParentNode should be None
     """
-    iterations = 0
+    # iterations = 0
 
     # Clear the parent pointer and path_cost in order make sure that the initial state is a root node
     initial_state.parent = None
@@ -148,39 +151,62 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
     frontier.prepare(possible_goals)
 
     root = MultiParentNode(initial_state)
+    action_set = [action_set]
 
     frontier.add(root)
-    generated_states = {}
+    # generated_states = {}
 
     # Your implementation of ALL-OPTIMAL-PLANS goes here...
     expanded = set()
     visited = set()
-    while frontier:
+    visited.add(root)
+    goals_found = [False] * len(possible_goals)
+    goal_nodes = []
+    while frontier and not all(goals_found):
         current_node = frontier.pop()
 
-        """if goal_description.is_goal(current_state):
-            #Printing generated states:
-            # print(f"Generated states is contained here: {print_search_status(expanded, frontier)}")
-            return True, current_state.extract_plan()"""
+        for i, goal_description in enumerate(possible_goals):
+            if goal_description.is_goal(current_node.state):
+                current_node.consistent_goals.add(goal_description)
+                goal_nodes.append(current_node)
+                goals_found[i] = True
 
         expanded.add(current_node)
-        current_state = current_node.state
-        applicable_actions = current_state.get_applicable_actions(action_set)
+        applicable_actions = current_node.get_applicable_actions(action_set)
 
         for action in applicable_actions:
-            next_state = current_node.result(action)
+            next_node = MultiParentNode(current_node.result(action))
 
-            if next_state in visited:
-                if next_state.path_cost == current_node.path_cost + 1:
-                    next_state.parents.append(current_node)
+            print("Current node:\n", current_node)
+            print("Action:\n", action)
+            print("Next node:\n", next_node)
+            print("Visited:\n", visited)
+            print("--------------------")
+            if next_node in visited:
+                next_node = [node for node in visited if node == next_node][0]
+                if next_node.path_cost == current_node.path_cost + 1:
+                    # Get the node from the visited set and add the current node as a parent
+                    next_node.parents.append(current_node)
+                    current_node.optimal_actions_and_results[action] = next_node
+            else:
+                next_node.parents.append(current_node)
+                current_node.optimal_actions_and_results[action] = next_node
 
-            # Add the next state to the frontier and visited sets
-            frontier.add(next_state)
-            visited.add(next_state)
+                # Add the next state to the frontier and visited sets
+                frontier.add(next_node)
+                visited.add(next_node)
+    
+    def backpropagate_goals(node):
+        print(node)
+        for parent in node.parents:
+            parent.consistent_goals.update(node.consistent_goals)
+            backpropagate_goals(parent)
+    for goal_node in goal_nodes:
+        backpropagate_goals(goal_node)
+    
+    visualize_solution_graph(root)
 
-    # If no solution is found, the function returns a tuple with the boolean False and an empty list for the plan.
-    # Return False if no solution is found
-    return False, []
+    return all(goals_found), root
 
 
 # A global variable used to keep track of the start time of the current search
