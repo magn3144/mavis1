@@ -47,7 +47,7 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
 
     #### Very experimental implementation of whisper
     action = "Move(N)"
-    cmd_input = robot.listen(4, playback=True)
+    robot.listen(4, playback=True)
     time.sleep(4)
     robot.say("Hi")
     time.sleep(3)

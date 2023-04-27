@@ -171,7 +171,7 @@ class RealRobot:
         
         # Get the audio data but do not pass through socket. 
         # Instead save it locally for faster speech to text!
-        self.scp.get('test.wav', local_path=str(os.getcwd())+"/tmp/")
+        self.scp.get('test.wav', local_path="C:\\Users\\magnu")
         print("[INFO]: File " + 'test.wav' + " downloaded to " + str(os.getcwd())+"/tmp/")
         self.scp.close()
     

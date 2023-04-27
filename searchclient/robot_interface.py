@@ -1,15 +1,21 @@
+# set utf-8 encoding
+# -*- coding: utf-8 -*-
+# Path: searchclient\robot_interface.py
+
 import socket
 import msgpack
 import time
 import math
 import sys
 import whisper
+import os
+#import re
 
 """
 Using the robot agent type differs from previous agent types.
   - Firstly, install additional package 'msgpack'.
     Use pip for installation, like this: 
-        'python -m pip install numpy msgpack'. 
+        'python -m pip install numpy msgpack'.
     Exact steps may vary based on your platform and Python 
     installation. 
 
@@ -293,6 +299,9 @@ class RobotClient():
 if __name__ == '__main__':
     # get the ip address of the robot
     ip = sys.argv[1]
+    model = whisper.load_model('base')
+    audio_path = "C:\\Users\\magnu"
+    print(audio_path)
 
     # connect to the server and robot
     robot = RobotClient(ip)
@@ -304,12 +313,16 @@ if __name__ == '__main__':
 
     #### Very experimental implementation of whisper
     action = None
-    cmd_input = robot.listen(3, playback=True)
-    print("cmd input: ", cmd_input, file=sys.stderr)
+    robot.listen(3, playback=True)
     time.sleep(3)
-    if cmd_input=="Move left":
+    cmd_input = model.transcribe(audio_path)['text'].lower()
+    # Remove special characters
+    #cmd_input = re.sub('[^A-Za-z0-9]+', '', cmd_input)
+    print("cmd input: ", cmd_input, file=sys.stderr)
+    robot.say("You said: " + cmd_input)
+    if cmd_input=="move left":
         action = "Move(W)"
-    elif cmd_input=="Move right":
+    elif cmd_input=="move right":
         action = "Move(E)"
     else:
         robot.say("I didn't understand what you said")
