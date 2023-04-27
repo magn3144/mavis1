@@ -30,7 +30,7 @@ from strategies.bestfirst import FrontierAStar, FrontierGreedy
 from utils import read_line
 
 
-debug = True
+debug = False
 
 
 def load_level_file_from_server():

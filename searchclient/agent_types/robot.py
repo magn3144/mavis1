@@ -38,64 +38,36 @@ import time
 
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
     print(robot_ip)
-    # Write your robot agent type here!
-
-    # What follows is a small example of how to interact with the robot.
-    # You should browse through 'robot_interface.py' to get a full overview of all the available functionality
     robot = RobotClient(robot_ip)
-
-    # Test out the robots microphone. The server will let you know when the robot is listening.
-    robot.listen(3, playback=True)
-
-    # test the robots speech
     robot.stand()
+    time.sleep(3)
+    robot.say("I am listening now")
+    time.sleep(1)
 
 
-    # #### Very experimental implementation of whisper
-    # cmd_input = robot.listen(3, playback=True)
-    # if cmd_input=="Move left":
-    #     action = "Move(W)"
-    # elif cmd_input=="Move right":
-    #     action = "Move(E)"
-    # angle = robot.direction_mapping[action]
-    # robot.turn(angle, block=False)
-    # robot.forward(distance=0.6, block=False)
-    # robot.declare_direction(action)
+    #### Very experimental implementation of whisper
+    action = "Move(N)"
+    cmd_input = robot.listen(4, playback=True)
+    time.sleep(4)
+    robot.say("Hi")
+    time.sleep(3)
+    print(cmd_input)
+    if cmd_input=="move left":
+        action = "Move(W)"
+    elif cmd_input=="move right":
+        action = "Move(E)"
 
+    angle = robot.direction_mapping[action] / 360 * 2 * math.pi
+    robot.declare_direction(action)
+    time.sleep(3)
+    robot.forward(distance=0.5, block=False)
+    time.sleep(3)
+    robot.turn(angle, block=False)
+    time.sleep(3)
+    robot.forward(distance=0.5, block=False)
+    time.sleep(3)
 
-
-    # The robot will announce that it is executing the plan
-    robot.say('I am executing plan. Please watch out!')
-
-    # # Implement your solution here!
-    # Solvable, plan = graph_search(initial_state, action_library, goal_description, frontier)
-
-    ### Example of plan
-    # [[Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Move(E)],
-    # [Move(E)], [Move(S)], [Move(E)], [Move(S)], [Move(E)], [Move(E)], [Move(E)], [Move(E)], [Push(S, S)]]
-
-    # plan = [[ROBOT_ACTION_LIBRARY[0]]]
-    # for action in plan:
-    #     action = action[0]
-    #     angle = robot.direction_mapping[action]
-    #     robot.turn(angle, block=False)
-    #     robot.forward(distance=0.6, block=False)
-    #     robot.declare_direction(action)
-
-    robot.forward(distance=0.6, block=False)
-    robot.declare_direction("Move(N)")
-
-    # robot.forward(distance=0.6, block=False)
-    # robot.declare_direction("Move(N)")
-    # time.sleep(4)
-    # robot.turn(1.5708, block=False)
-    # time.sleep(4)
-    # robot.say('Arian is the most cool boy i have seen.')
-    # robot.forward(distance=0.6, block=False)
-    # robot.declare_direction("Move(W)")
-    # time.sleep(4)
-
-    # Wait until the robot is done speaking
+    robot.say("Im done moving")
     time.sleep(3)
 
     # close the connection

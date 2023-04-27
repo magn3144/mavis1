@@ -3,6 +3,7 @@ import msgpack
 import time
 import math
 import sys
+import whisper
 
 """
 Using the robot agent type differs from previous agent types.
@@ -14,7 +15,7 @@ Using the robot agent type differs from previous agent types.
 
   - Secondly, you don't need the Java server for the robot. So, the command
     to start the search client in the terminal is different, for example:
-        'python searchclient/searchclient.py -robot -ip 192.168.0.108 -level levels/SAsoko1_04.lvl'
+        'python searchclient/searchclient.py -robot -ip 192.168.0.106 -level levels/SAsoko1_04.lvl'
     runs the searchclient with the 'robot' agent type on the robot at IP 192.168.0.102.
 
   - To connect to the robots, connect to the Pepper hotspot. To reduce
@@ -51,7 +52,7 @@ class RobotClient():
             port = 5001  # if port fails you have from 5000-5009
         elif self.ip == '192.168.1.105':
             port = 5010  # if port fails you have from 5010-5019
-        elif self.ip == '192.168.1.106':
+        elif self.ip == '192.168.1.110':
             port = 5020 # if port fails you have from 5020-5029
         elif self.ip == '192.168.1.108':
             port = 5030 # if port fails you have from 5030-5039
@@ -287,8 +288,6 @@ class RobotClient():
         message = msgpack.packb(listen_cmd, use_bin_type=True)
         self.client_socket.send(message)
         data = self.client_socket.recv(1024)
-    
-
 
 
 if __name__ == '__main__':
@@ -298,14 +297,37 @@ if __name__ == '__main__':
     # connect to the server and robot
     robot = RobotClient(ip)
 
-    # test the robots listening
-    # robot.listen(3, playback=True)
-
-    # test the robots speech
     robot.stand()
+    time.sleep(3)
+    robot.say("I am listening now")
+    time.sleep(1.5)
 
-    #robot.say('I am executing plan. Please watch out!')
-    robot.say('I am connected!')
+    #### Very experimental implementation of whisper
+    action = None
+    cmd_input = robot.listen(3, playback=True)
+    print("cmd input: ", cmd_input, file=sys.stderr)
+    time.sleep(3)
+    if cmd_input=="Move left":
+        action = "Move(W)"
+    elif cmd_input=="Move right":
+        action = "Move(E)"
+    else:
+        robot.say("I didn't understand what you said")
+        time.sleep(3)
+        robot.shutdown()
+
+    angle = robot.direction_mapping[action] / 360 * 2 * math.pi
+    robot.declare_direction(action)
+    time.sleep(3)
+    robot.forward(distance=0.5, block=False)
+    time.sleep(3)
+    robot.turn(angle, block=False)
+    time.sleep(3)
+    robot.forward(distance=0.5, block=False)
+    time.sleep(3)
+
+    robot.say("Im done moving")
+    time.sleep(3)
 
     # shutdown the robot
     robot.shutdown()

@@ -53,6 +53,7 @@ class MultiParentNode:
         self.path_cost = state.path_cost
         self.parents = []
         self.actions = []
+        self.helper_action = None
         self.optimal_actions_and_results = {}
         self.consistent_goals = set()
         self.id = get_fresh()  # Only used for visualization
