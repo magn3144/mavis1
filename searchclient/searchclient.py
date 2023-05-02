@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debug = True
+
 import argparse
 import memory
 import re
@@ -20,7 +22,8 @@ from agent_types.decentralised import decentralised_agent_type
 from agent_types.helper import helper_agent_type
 from agent_types.non_deterministic import non_deterministic_agent_type
 from agent_types.goal_recognition import goal_recognition_agent_type
-from agent_types.robot import robot_agent_type
+if not debug:
+    from agent_types.robot import robot_agent_type
 from domains.hospital import *
 from strategies.bfs import FrontierBFS
 from strategies.dfs import FrontierDFS
@@ -28,9 +31,6 @@ from strategies.bestfirst import FrontierAStar, FrontierGreedy
 # from robot_interface import RobotInterface
 
 from utils import read_line
-
-
-debug = False
 
 
 def load_level_file_from_server():
@@ -113,7 +113,7 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["bfs", "goalcount", "default", "goalrecognition", "levels/magnus_all_optimal_plans_3.lvl", "test_ip"]
+        parameters = ["bfs", "goalcount", "default", "goalrecognition", "levels/magnus_goal_recognition.lvl", "test_ip"]
     else:
         parameters = parse_command_line_arguments()
 

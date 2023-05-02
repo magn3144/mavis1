@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import random
-from search_algorithms.all_optimal_plans import all_optimal_plans
+from search_algorithms.all_optimal_plans import all_optimal_plans, visualize_solution_graph
 from search_algorithms.and_or_graph_search import and_or_graph_search
 from utils import *
 from collections import ChainMap
@@ -85,44 +85,51 @@ def solution_graph_results(node, state, helper_action):
     # This results method can be used as the 'results' function for the AND-OR graph-search.
     # It takes a GoalRecognitionNode (or something else if you choose to not use the GoalRecognitionNode class) and
     # the action taken by the helper, i.e., the chosen OR-branch.
-    # This function should then return all of the possible outcomes, i.e., the possible AND-nodes.
-    next_node_state_pairs = set()
-    for action in node.optimal_actions_and_results.keys:
+    # This function should then return all of the possible outcomes, i.e., the possible AND-nodes. 
+    next_nodes = set()
+    next_states = set()
+    for action in node.optimal_actions_and_results.keys():
         next_node = node.optimal_actions_and_results[action]
-        if state.is_applicable([action, helper_action]):
+        if state.is_applicable([action, helper_action]) and not state.is_conflicting([action, helper_action]):
             next_state = state.result([action, helper_action])
-            next_node_state_pairs.add((next_node, next_state))
-        elif state.is_applicable([action, GenericNoOp()]):
-            next_node_state_pairs.add((next_node, state))
-        elif state.is_applicable([GenericNoOp(), helper_action]):
+            next_nodes.add(next_node)
+            next_states.add(next_state)
+        # elif state.is_applicable([action, GenericNoOp()]):
+        #     next_state = state.result([action, GenericNoOp()])
+        #     next_nodes.add(next_node)
+        #     next_states.add(next_state)
+        elif state.is_applicable([GenericNoOp(), helper_action]) and helper_action.name != "NoOp":
             next_state = state.result([GenericNoOp(), helper_action])
-            next_node_state_pairs.add((node, next_state))
-    return next_node_state_pairs
+            next_nodes.add(node)
+            next_states.add(next_state)
+    return next_nodes, next_states
 
 def and_or_graph_search_goal_recognition(initial_node, initial_state, action_set, goal_description, results):
     # Returns a solution tree using the all_optimal_plans algorithm and the AND-OR graph search.
     # The solution tree should be a GoalRecognitionNode object, where the helper action in each node is the chosen OR-branch.
-    action_set = action_set * initial_state.level.num_agents
+    action_set = [action_set] * initial_state.level.num_agents
     max_depth = 25
     for i in range(1, max_depth):
-        policy = or_search(initial_node, initial_state, [], goal_description, action_set, results, i)
-        if policy is not None:
-            return policy
-    return None
+        policy_found = or_search(initial_node, initial_state, [], goal_description, action_set, results, 6)
+        if policy_found:
+            return True
+    return False
 
 def or_search(node, state, path, goal_description, action_set, results, depth):
-    if goal_description.is_goal(node):
-        return {}
-    if node in path:
-        return None
+    if goal_description.is_goal(state):
+        return node
+    if state in path:
+        return False
     if depth == 0:
-        return None
-    applicable_actions = applicable_helper_actions(action_set, node.state)
+        return False
+    applicable_actions = applicable_helper_actions(action_set[HELPER_AGENT], state)
     for action in applicable_actions:
-        and_nodes, and_states = results(node, state, action, action_set)
-        policy_found = and_search(and_nodes, and_states, [node] + path, goal_description, action_set, results, depth - 1)
-        if policy_found:
-            node.helper_action = action
+        and_nodes, and_states = results(node, state, action)
+        if len(and_states) == 0:
+            continue
+        policy = and_search(and_nodes, and_states, [state] + path, goal_description, action_set, results, depth - 1)
+        if policy:
+            node.helper_actions.append(action)
             return True
     return False
 
@@ -131,7 +138,7 @@ def and_search(nodes, states, path, goal_description, action_set, results, depth
         if len(node.consistent_goals) == 0:
             return False
         policy = or_search(node, state, path, goal_description, action_set, results, depth)
-        if policy == False:
+        if not policy:
             return False
     return True
 
@@ -151,5 +158,12 @@ def goal_recognition_agent_type(level, initial_state, action_library, goal_descr
     possible_goals = []
     for i in range(goal_description.num_sub_goals()):
         possible_goals.append(goal_description.get_sub_goal(i))
-    solution_found, solution_graph = all_optimal_plans(initial_state, action_library, possible_goals, frontier)
+    actor_color = initial_state.level.colors[str(actor_AGENT)]
+    monocrome_initial_state = initial_state.color_filter(actor_color)
+    solutions_found, solution_graph = all_optimal_plans(monocrome_initial_state, action_library, possible_goals, frontier)
+    policy_found = and_or_graph_search_goal_recognition(solution_graph, initial_state, action_library, goal_description, solution_graph_results)
+    if policy_found:
+        print("success")
+        visualize_solution_graph(solution_graph)
+        return solution_graph
     raise NotImplementedError()

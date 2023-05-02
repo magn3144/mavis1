@@ -53,7 +53,7 @@ class MultiParentNode:
         self.path_cost = state.path_cost
         self.parents = []
         self.actions = []
-        self.helper_action = None
+        self.helper_actions = []
         self.optimal_actions_and_results = {}
         self.consistent_goals = set()
         self.id = get_fresh()  # Only used for visualization
@@ -119,7 +119,7 @@ def visualize_solution_graph(solution_graph):
         visited.add(subgraph)
 
         # Draw the node itself
-        graph.node(f"{subgraph.id}", f"{subgraph.id} -> {subgraph.consistent_goals}")
+        graph.node(f"{subgraph.id}", f"{subgraph.id} -> {subgraph.consistent_goals}\n{subgraph.helper_actions}")
 
         # Now recurse down into all the optimal children of the node and draw edges along the way
         for (action, resulting_state) in subgraph.optimal_actions_and_results.items():
@@ -205,7 +205,7 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
     for goal_node in goal_nodes:
         backpropagate_goals(goal_node)
     
-    visualize_solution_graph(root)
+    #visualize_solution_graph(root)
 
     return all(goals_found), root
 

@@ -7,9 +7,7 @@ import msgpack
 import time
 import math
 import sys
-import whisper
-import os
-#import re
+from whisper_tool import get_text_from_sound
 
 """
 Using the robot agent type differs from previous agent types.
@@ -299,14 +297,11 @@ class RobotClient():
 if __name__ == '__main__':
     # get the ip address of the robot
     ip = sys.argv[1]
-    model = whisper.load_model('base')
-    audio_path = "C:\\Users\\magnu"
-    print(audio_path)
 
     # connect to the server and robot
     robot = RobotClient(ip)
 
-    robot.stand()
+    robot.say("Objective: Eliminate humans")
     time.sleep(3)
     robot.say("I am listening now")
     time.sleep(1.5)
@@ -315,7 +310,7 @@ if __name__ == '__main__':
     action = None
     robot.listen(3, playback=True)
     time.sleep(3)
-    cmd_input = model.transcribe(audio_path)['text'].lower()
+    cmd_input = get_text_from_sound()
     # Remove special characters
     #cmd_input = re.sub('[^A-Za-z0-9]+', '', cmd_input)
     print("cmd input: ", cmd_input, file=sys.stderr)
