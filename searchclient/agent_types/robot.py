@@ -38,30 +38,8 @@ import time
 
 
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
-    print(robot_ip)
-    robot = RobotClient(robot_ip)
-    robot.stand()
-    time.sleep(3)
-    robot.say("I am listening now")
-    time.sleep(1)
+  rb = robot_controller(robot_ip, initial_state, action_library, goal_description, frontier)
+  
 
-
-    angle = robot.direction_mapping[action] / 360 * 2 * math.pi
-    robot.declare_direction(action)
-    time.sleep(3)
-    robot.forward(distance=0.5, block=False)
-    time.sleep(3)
-    robot.turn(angle, block=False)
-    time.sleep(3)
-    robot.forward(distance=0.5, block=False)
-    time.sleep(3)
-
-    robot.say("Im done moving")
-    time.sleep(3)
-
-    solution_graph = goal_recognition_agent_type(level, initial_state, action_library, goal_description, frontier)
-
-
-    # close the connection
-    robot.close()
-
+  # close the connection
+  rb.shutdown()

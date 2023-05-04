@@ -9,6 +9,7 @@ import math
 import sys
 from whisper_tool import get_text_from_sound
 import re
+from search_algorithms.graph_search import graph_search
 
 """
 Using the robot agent type differs from previous agent types.
@@ -295,10 +296,15 @@ class RobotClient():
         data = self.client_socket.recv(1024)
 
 class robot_controller():
-    def __init__(self, robot_ip):
+    def __init__(self, robot_ip, initial_state, action_set, goal_description, frontier):
         self.robot = RobotClient(robot_ip)
         self.direction = 0
         self.direction_mapping = {'north': 0, 'east': math.pi/2, 'south': math.pi, 'west': 3*math.pi/2}
+        self.action_mapping = {'Move(N)': 'north', 'Move(E)': 'east', 'Move(S)': 'south', 'Move(W)': 'west', 'Push(N,N)': 'north', 'Push(E,E)': 'east', 'Push(S,S)': 'south', 'Push(W,W)': 'west'}
+        self.initial_state = initial_state
+        self.action_set = action_set
+        self.goal_description = goal_description
+        self.frontier = frontier
     
     def move(self, direction):
         self.robot.say("Direction: " + direction)
@@ -306,15 +312,29 @@ class robot_controller():
         angle_delta = self.direction - direction_angle
         if angle_delta < 0:
             angle_delta += 2*math.pi
-        self.robot.turn(angle_delta, False)
-        self.robot.forward(0.5, False)
+        self.robot.turn(angle_delta, True)
+        self.robot.forward(0.5, True)
         self.direction = direction_angle
 
     def stand(self):
         self.robot.stand()
 
-    def listen(self, duration=3, channels=[0,0,1,0],playback=True):
-        self.robot.listen(duration, channels, playback)
+    def listen(self):
+        self.say("I am listening now")
+        time.sleep(1.5)
+        self.robot.listen(3, playback=True)
+        time.sleep(3)
+        cmd_input = get_text_from_sound()
+        print("cmd input: ", cmd_input, file=sys.stderr)
+        self.say("You said: " + cmd_input)
+        time.sleep(1.5)
+        cmd_input = re.sub('[^A-Za-z0-9]+', '', cmd_input)
+        return cmd_input
+    
+    def execute_plan(self, plan):
+        for action in plan:
+            action_string = self.action_mapping[action.name]
+            self.move(action_string)
 
     def say(self, text):
         self.robot.say(text)
@@ -325,27 +345,14 @@ class robot_controller():
 
 if __name__ == '__main__':
     # get the ip address of the robot
-    ip = sys.argv[1]
+    ip = 0 #sys.argv[1]
 
     # connect to the server and robot
-    rc = robot_controller(ip)
 
-    rc.say("I am listening now")
-    time.sleep(1.5)
+    rc = robot_controller(ip, )
 
-    rc.listen(3, playback=True)
-    time.sleep(3)
-    cmd_input = get_text_from_sound()
+    # cmd_input = rc.listen()
+    # rc.move(cmd_input)
 
-    print("cmd input: ", cmd_input, file=sys.stderr)
-    rc.say("You said: " + cmd_input)
-    time.sleep(1.5)
-    cmd_input = re.sub('[^A-Za-z0-9]+', '', cmd_input)
-
-    #rc.move(cmd_input)
-    rc.robot.forward(0.5, True)
-    rc.robot.turn(3.14, True)
-    rc.robot.forward(0.5, True)
-
-    # shutdown the robot
-    rc.shutdown()
+    # # shutdown the robot
+    # rc.shutdown()

@@ -113,7 +113,7 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["bfs", "goalcount", "default", "goalrecognition", "levels/magnus_goal_recognition_5.lvl", "test_ip"]
+        parameters = ["bfs", "goalcount", "default", "robot", "levels/magnus_all_optimal_plans_0.lvl", "test_ip"]
     else:
         parameters = parse_command_line_arguments()
 
