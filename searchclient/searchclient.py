@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-debug = True
+debug = False
 
 import argparse
 import memory
@@ -46,8 +46,8 @@ def load_level_file_from_server():
 
 
 def load_level_file_from_path(path):
-    if debug:
-        path = "../{}".format(path)
+    # if debug:
+    #     path = "../{}".format(path)
     with open(path, "r") as f:
         lines = f.readlines()
         lines = list(map(lambda line: line.strip(), lines))
@@ -84,6 +84,8 @@ def parse_command_line_arguments():
                                       help='Use the default action library.')
     action_library_group.add_argument('-sticky', action='store_const', dest='action_library', const='sticky',
                                       help='Use an action library with sticky goals.')
+    action_library_group.add_argument('-robot_actions', action='store_const', dest='action_library', const='sticky',
+                                      help='Robot can only push straight.')
 
     agent_type_group = parser.add_mutually_exclusive_group()
     agent_type_group.add_argument('-classic', action='store_const', dest='agent_type', const='classic',
@@ -153,6 +155,8 @@ if __name__ == '__main__':
         # Construct the requested action library
         if action_library_name == 'default':
             action_library = DEFAULT_HOSPITAL_ACTION_LIBRARY
+        elif action_library_name == 'robot_actions':
+            action_library = ROBOT_ACTION_LIBRARY
 
         # Construct the requested heuristic
         if heuristic_name == 'goalcount':

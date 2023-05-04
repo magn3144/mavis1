@@ -11,7 +11,7 @@ from whisper_tool import get_text_from_sound
 import re
 from search_algorithms.graph_search import graph_search
 
-debug_ri = True
+debug_ri = False
 
 """
 Using the robot agent type differs from previous agent types.
