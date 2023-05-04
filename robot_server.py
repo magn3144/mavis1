@@ -46,7 +46,7 @@ class RealRobot:
         
         if self.ip == '192.168.1.102':
             ssh.connect(hostname=self.ip, username="nao", password="salt")
-        elif self.ip == '192.168.1.105':
+        elif self.ip == '192.168.1.106':
             ssh.connect(hostname=self.ip, username="nao", password="pepper")
         elif self.ip == '192.168.1.110':
             ssh.connect(hostname=self.ip, username="nao", password="r2dtu")
@@ -171,7 +171,7 @@ class RealRobot:
         
         # Get the audio data but do not pass through socket. 
         # Instead save it locally for faster speech to text!
-        self.scp.get('test.wav', local_path="C:\\Users\\magnu")
+        self.scp.get('test.wav', local_path="C:\\Users\\magnu\\My Drive\\DTU\\6. Semester\\13-Ugers\\Symbolic Artificial Intelligence\\mavis1\\searchclient\\tmp")
         print("[INFO]: File " + 'test.wav' + " downloaded to " + str(os.getcwd())+"/tmp/")
         self.scp.close()
     
@@ -211,7 +211,7 @@ def server_program(robot):
     # Base port number for all robots off of ip address
     if robot.ip == '192.168.1.100':
         port = 5001  # if port fails you have from 5000-5009
-    elif robot.ip == '192.168.1.105':
+    elif robot.ip == '192.168.1.106':
         port = 5010  # if port fails you have from 5010-5019
     elif robot.ip == '192.168.1.110':
         port = 5020 # if port fails you have from 5020-5029

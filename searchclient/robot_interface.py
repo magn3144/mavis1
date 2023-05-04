@@ -8,6 +8,7 @@ import time
 import math
 import sys
 from whisper_tool import get_text_from_sound
+import re
 
 """
 Using the robot agent type differs from previous agent types.
@@ -54,7 +55,7 @@ class RobotClient():
 
         if self.ip == '192.168.1.102':
             port = 5001  # if port fails you have from 5000-5009
-        elif self.ip == '192.168.1.105':
+        elif self.ip == '192.168.1.106':
             port = 5010  # if port fails you have from 5010-5019
         elif self.ip == '192.168.1.110':
             port = 5020 # if port fails you have from 5020-5029
@@ -293,49 +294,58 @@ class RobotClient():
         self.client_socket.send(message)
         data = self.client_socket.recv(1024)
 
+class robot_controller():
+    def __init__(self, robot_ip):
+        self.robot = RobotClient(robot_ip)
+        self.direction = 0
+        self.direction_mapping = {'north': 0, 'east': math.pi/2, 'south': math.pi, 'west': 3*math.pi/2}
+    
+    def move(self, direction):
+        self.robot.say("Direction: " + direction)
+        direction_angle = self.direction_mapping[direction]
+        angle_delta = self.direction - direction_angle
+        if angle_delta < 0:
+            angle_delta += 2*math.pi
+        self.robot.turn(angle_delta, False)
+        self.robot.forward(0.5, False)
+        self.direction = direction_angle
+
+    def stand(self):
+        self.robot.stand()
+
+    def listen(self, duration=3, channels=[0,0,1,0],playback=True):
+        self.robot.listen(duration, channels, playback)
+
+    def say(self, text):
+        self.robot.say(text)
+
+    def shutdown(self):
+        self.robot.shutdown()
+
 
 if __name__ == '__main__':
     # get the ip address of the robot
     ip = sys.argv[1]
 
     # connect to the server and robot
-    robot = RobotClient(ip)
+    rc = robot_controller(ip)
 
-    robot.say("Objective: Eliminate humans")
-    time.sleep(3)
-    robot.say("I am listening now")
+    rc.say("I am listening now")
     time.sleep(1.5)
 
-    #### Very experimental implementation of whisper
-    action = None
-    robot.listen(3, playback=True)
+    rc.listen(3, playback=True)
     time.sleep(3)
     cmd_input = get_text_from_sound()
-    # Remove special characters
-    #cmd_input = re.sub('[^A-Za-z0-9]+', '', cmd_input)
+
     print("cmd input: ", cmd_input, file=sys.stderr)
-    robot.say("You said: " + cmd_input)
-    if cmd_input=="move left":
-        action = "Move(W)"
-    elif cmd_input=="move right":
-        action = "Move(E)"
-    else:
-        robot.say("I didn't understand what you said")
-        time.sleep(3)
-        robot.shutdown()
+    rc.say("You said: " + cmd_input)
+    time.sleep(1.5)
+    cmd_input = re.sub('[^A-Za-z0-9]+', '', cmd_input)
 
-    angle = robot.direction_mapping[action] / 360 * 2 * math.pi
-    robot.declare_direction(action)
-    time.sleep(3)
-    robot.forward(distance=0.5, block=False)
-    time.sleep(3)
-    robot.turn(angle, block=False)
-    time.sleep(3)
-    robot.forward(distance=0.5, block=False)
-    time.sleep(3)
-
-    robot.say("Im done moving")
-    time.sleep(3)
+    #rc.move(cmd_input)
+    rc.robot.forward(0.5, True)
+    rc.robot.turn(3.14, True)
+    rc.robot.forward(0.5, True)
 
     # shutdown the robot
-    robot.shutdown()
+    rc.shutdown()
