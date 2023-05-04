@@ -17,6 +17,7 @@ from search_algorithms.and_or_graph_search import and_or_graph_search
 from utils import *
 from collections import ChainMap
 import copy
+import sys
 
 
 actor_AGENT = 0
@@ -181,11 +182,11 @@ def goal_recognition_agent_type(level, initial_state, action_library, goal_descr
     if not solutions_found:
         print("no actor policy found")
         return None
-    visualize_solution_graph(solution_graph)
+    # visualize_solution_graph(solution_graph)
     solution_graph = and_or_graph_search_goal_recognition(solution_graph, initial_state, action_library, goal_description)
     if solution_graph:
         print("success")
-        visualize_solution_graph(solution_graph)
+        # visualize_solution_graph(solution_graph)
         return solution_graph
     else:
         print("no helper policy found")

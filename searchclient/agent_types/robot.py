@@ -33,6 +33,7 @@ from utils import *
 from robot_interface import *
 from domains.hospital.actions import ROBOT_ACTION_LIBRARY
 from search_algorithms.graph_search import graph_search
+from goal_recognition import goal_recognition_agent_type
 import time
 
 
@@ -44,18 +45,6 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
     robot.say("I am listening now")
     time.sleep(1)
 
-
-    #### Very experimental implementation of whisper
-    action = "Move(N)"
-    robot.listen(4, playback=True)
-    time.sleep(4)
-    robot.say("Hi")
-    time.sleep(3)
-    print(cmd_input)
-    if cmd_input=="move left":
-        action = "Move(W)"
-    elif cmd_input=="move right":
-        action = "Move(E)"
 
     angle = robot.direction_mapping[action] / 360 * 2 * math.pi
     robot.declare_direction(action)
@@ -70,5 +59,9 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
     robot.say("Im done moving")
     time.sleep(3)
 
+    solution_graph = goal_recognition_agent_type(level, initial_state, action_library, goal_description, frontier)
+
+
     # close the connection
     robot.close()
+
