@@ -33,13 +33,22 @@ from utils import *
 from robot_interface import *
 from domains.hospital.actions import ROBOT_ACTION_LIBRARY
 from search_algorithms.graph_search import graph_search
-from goal_recognition import goal_recognition_agent_type
+# from goal_recognition import goal_recognition_agent_type
 import time
 
 
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
   rb = robot_controller(robot_ip, initial_state, action_library, goal_description, frontier)
-  
+
+  solvable, plan = graph_search(initial_state, [action_library], goal_description, frontier)
+  if not solvable:
+    rb.say("The level you have given me is not solvable.")
+    return
+  rb.say("I found a solution.")
+
+  rb.execute_plan(plan)
+
+  rb.say("The plan is executed.")
 
   # close the connection
   rb.shutdown()
