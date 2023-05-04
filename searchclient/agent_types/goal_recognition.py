@@ -16,6 +16,7 @@ from search_algorithms.all_optimal_plans import all_optimal_plans, visualize_sol
 from search_algorithms.and_or_graph_search import and_or_graph_search
 from utils import *
 from collections import ChainMap
+import copy
 
 
 actor_AGENT = 0
@@ -66,89 +67,105 @@ class GoalRecognitionNode:
 
     def __hash__(self):
         return hash((self.state, self.solution_graph))
+    
+    def __repr__(self):
+        return str(self.state)
 
-    def get_applicable_actions(self, action_set):
-        # Here we are only interested in the actions of the helper, but state.get_applicable_actions will return a list
-        # of joint actions, where the actor action is always GenericNoOp().
-        applicable_joint_actions = self.state.get_applicable_actions(action_set)
-        applicable_actions = [joint_action[HELPER_AGENT] for joint_action in applicable_joint_actions]
+    # def get_applicable_actions(self, action_set):
+    #     # Here we are only interested in the actions of the helper, but state.get_applicable_actions will return a list
+    #     # of joint actions, where the actor action is always GenericNoOp().
+    #     applicable_joint_actions = self.state.get_applicable_actions(action_set)
+    #     applicable_actions = [joint_action[HELPER_AGENT] for joint_action in applicable_joint_actions]
+    #     return applicable_actions
+
+    def applicable_helper_actions(self, action_set):
+        # Returns a list of all possible helper actions, i.e., all possible OR-branches.
+        applicable_actions = []
+        for action in action_set:
+            if action.is_applicable(HELPER_AGENT, self.state):
+                applicable_actions.append(action)
         return applicable_actions
 
-    def result(self, joint_action):
-
+    def results(self, helper_action):
         # The result method should return a new GoalRecognitionNode which contains the resulting state and the
         # solution graph obtained from executing the joint_action in the current state.
-        raise NotImplementedError()
+
+        next_goal_recognition_nodes = set()
+        for action in self.solution_graph.optimal_actions_and_results.keys():
+            next_node = self.solution_graph.optimal_actions_and_results[action]
+            if self.state.is_applicable([action, helper_action]) and not self.state.is_conflicting([action, helper_action]):
+                next_state = self.state.result([action, helper_action])
+                next_goal_recognition_nodes.add(GoalRecognitionNode(next_state, next_node))
+            elif self.state.is_applicable([GenericNoOp(), helper_action]):
+                next_state = self.state.result([GenericNoOp(), helper_action])
+                next_goal_recognition_nodes.add(GoalRecognitionNode(next_state, self.solution_graph))
+        return next_goal_recognition_nodes
 
 
-def solution_graph_results(node, state, helper_action):
-    # This results method can be used as the 'results' function for the AND-OR graph-search.
-    # It takes a GoalRecognitionNode (or something else if you choose to not use the GoalRecognitionNode class) and
-    # the action taken by the helper, i.e., the chosen OR-branch.
-    # This function should then return all of the possible outcomes, i.e., the possible AND-nodes. 
-    next_nodes = set()
-    next_states = set()
-    for action in node.optimal_actions_and_results.keys():
-        next_node = node.optimal_actions_and_results[action]
-        if state.is_applicable([action, helper_action]) and not state.is_conflicting([action, helper_action]):
-            next_state = state.result([action, helper_action])
-            next_nodes.add(next_node)
-            next_states.add(next_state)
-        # elif state.is_applicable([action, GenericNoOp()]):
-        #     next_state = state.result([action, GenericNoOp()])
-        #     next_nodes.add(next_node)
-        #     next_states.add(next_state)
-        elif state.is_applicable([GenericNoOp(), helper_action]) and helper_action.name != "NoOp":
-            next_state = state.result([GenericNoOp(), helper_action])
-            next_nodes.add(node)
-            next_states.add(next_state)
-    return next_nodes, next_states
+# def solution_graph_results(goalRecognitionNode, helper_action):
+#     # This results method can be used as the 'results' function for the AND-OR graph-search.
+#     # It takes a GoalRecognitionNode (or something else if you choose to not use the GoalRecognitionNode class) and
+#     # the action taken by the helper, i.e., the chosen OR-branch.
+#     # This function should then return all of the possible outcomes, i.e., the possible AND-nodes. 
+#     next_nodes = set()
+#     next_states = set()
+#     for action in node.optimal_actions_and_results.keys():
+#         next_node = node.optimal_actions_and_results[action]
+#         if state.is_applicable([action, helper_action]) and not state.is_conflicting([action, helper_action]):
+#             next_state = state.result([action, helper_action])
+#             next_nodes.add(next_node)
+#             next_states.add(next_state)
+#         # elif state.is_applicable([action, GenericNoOp()]):
+#         #     next_state = state.result([action, GenericNoOp()])
+#         #     next_nodes.add(next_node)
+#         #     next_states.add(next_state)
+#         elif state.is_applicable([GenericNoOp(), helper_action]) and helper_action.name != "NoOp":
+#             next_state = state.result([GenericNoOp(), helper_action])
+#             next_nodes.add(node)
+#             next_states.add(next_state)
+#     return next_nodes, next_states
 
-def and_or_graph_search_goal_recognition(initial_node, initial_state, action_set, goal_description, results):
+def and_or_graph_search_goal_recognition(initial_node, initial_state, action_set, goal_description):
     # Returns a solution tree using the all_optimal_plans algorithm and the AND-OR graph search.
     # The solution tree should be a GoalRecognitionNode object, where the helper action in each node is the chosen OR-branch.
     action_set = [action_set] * initial_state.level.num_agents
     max_depth = 25
     for i in range(1, max_depth):
-        policy_found = or_search(initial_node, initial_state, [], goal_description, action_set, results, 6)
+        goal_recognition_node = GoalRecognitionNode(copy.deepcopy(initial_state), copy.deepcopy(initial_node))
+        policy_found = or_search(goal_recognition_node, [], goal_description, action_set, i)
         if policy_found:
-            return True
-    return False
+            return goal_recognition_node.solution_graph
+    return None
 
-def or_search(node, state, path, goal_description, action_set, results, depth):
-    if goal_description.is_goal(state):
-        return node
-    if state in path:
+def or_search(g_node, path, goal_description, action_set, depth):
+    #print(g_node.solution_graph.id)
+    if g_node.solution_graph.is_goal_state:
+        return True
+    if g_node.state in path:
         return False
     if depth == 0:
         return False
-    applicable_actions = applicable_helper_actions(action_set[HELPER_AGENT], state)
+    applicable_actions = g_node.applicable_helper_actions(action_set[HELPER_AGENT])
     for action in applicable_actions:
-        and_nodes, and_states = results(node, state, action)
-        if len(and_states) == 0:
+        # print("State:\n" + str(g_node.state))
+        # print("Action: " + str(action))
+        and_goal_recognition_nodes = g_node.results(action)
+        if len(and_goal_recognition_nodes) == 0:
             continue
-        policy = and_search(and_nodes, and_states, [state] + path, goal_description, action_set, results, depth - 1)
+        policy = and_search(and_goal_recognition_nodes, [g_node.state] + path, goal_description, action_set, depth - 1)
         if policy:
-            node.helper_actions.append(action)
+            g_node.solution_graph.helper_actions.append(action)
             return True
     return False
 
-def and_search(nodes, states, path, goal_description, action_set, results, depth):
-    for node, state in zip(nodes, states):
-        if len(node.consistent_goals) == 0:
-            return False
-        policy = or_search(node, state, path, goal_description, action_set, results, depth)
+def and_search(goal_recognition_nodes, path, goal_description, action_set, depth):
+    for g_node in goal_recognition_nodes:
+        # if len(g_node.solution_graph.consistent_goals) == 0:
+        #     continue
+        policy = or_search(g_node, path, goal_description, action_set, depth)
         if not policy:
             return False
     return True
-
-def applicable_helper_actions(action_set, state):
-    # Returns a list of all possible helper actions, i.e., all possible OR-branches.
-    applicable_actions = []
-    for action in action_set:
-        if action.is_applicable(HELPER_AGENT, state):
-            applicable_actions.append(action)
-    return applicable_actions
 
 def goal_recognition_agent_type(level, initial_state, action_library, goal_description, frontier):
     # You should implement your goal recognition agent type here. You can take inspiration on how to structure the code
@@ -161,9 +178,15 @@ def goal_recognition_agent_type(level, initial_state, action_library, goal_descr
     actor_color = initial_state.level.colors[str(actor_AGENT)]
     monocrome_initial_state = initial_state.color_filter(actor_color)
     solutions_found, solution_graph = all_optimal_plans(monocrome_initial_state, action_library, possible_goals, frontier)
-    policy_found = and_or_graph_search_goal_recognition(solution_graph, initial_state, action_library, goal_description, solution_graph_results)
-    if policy_found:
+    if not solutions_found:
+        print("no actor policy found")
+        return None
+    visualize_solution_graph(solution_graph)
+    solution_graph = and_or_graph_search_goal_recognition(solution_graph, initial_state, action_library, goal_description)
+    if solution_graph:
         print("success")
         visualize_solution_graph(solution_graph)
         return solution_graph
-    raise NotImplementedError()
+    else:
+        print("no helper policy found")
+        return None

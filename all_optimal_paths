@@ -1,16 +1,28 @@
 digraph {
-	0 [label="0 -> {((3, 2), '0', True)}
-[NoOp, Move(E), Push(W,W), Pull(E,N), Push(E,S)]"]
-	1 [label="1 -> {((3, 2), '0', True)}
+	0 [label="0 -> {((2, 2), 'A', True), ((3, 2), '0', True)}
++++++
+++0++
++  A+
+++ ++
++++++
+False
+[NoOp, Move(W)]"]
+	1 [label="1 -> {((2, 2), 'A', True), ((3, 2), '0', True)}
++++++
+++ ++
++ 0A+
+++ ++
++++++
+False
 [NoOp]"]
-	2 [label="2 -> set()
+	2 [label="2 -> {((2, 2), 'A', True), ((3, 2), '0', True)}
++++++
+++ ++
++ A +
+++0++
++++++
+True
 []"]
-	1 -> 2 [label="Move(E)"]
-	4 [label="4 -> {((3, 2), '0', True)}
-[]"]
-	1 -> 4 [label="Move(S)"]
-	5 [label="5 -> set()
-[]"]
-	1 -> 5 [label="Move(W)"]
+	1 -> 2 [label="Pull(S,W)"]
 	0 -> 1 [label="Move(S)"]
 }

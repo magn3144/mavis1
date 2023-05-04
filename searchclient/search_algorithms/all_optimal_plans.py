@@ -56,6 +56,7 @@ class MultiParentNode:
         self.helper_actions = []
         self.optimal_actions_and_results = {}
         self.consistent_goals = set()
+        self.is_goal_state = False
         self.id = get_fresh()  # Only used for visualization
 
     def get_applicable_actions(self, action_set):
@@ -119,7 +120,7 @@ def visualize_solution_graph(solution_graph):
         visited.add(subgraph)
 
         # Draw the node itself
-        graph.node(f"{subgraph.id}", f"{subgraph.id} -> {subgraph.consistent_goals}\n{subgraph.helper_actions}")
+        graph.node(f"{subgraph.id}", f"{subgraph.id} -> {subgraph.consistent_goals}\n{subgraph.state}\n{subgraph.is_goal_state}\n{subgraph.helper_actions}")
 
         # Now recurse down into all the optimal children of the node and draw edges along the way
         for (action, resulting_state) in subgraph.optimal_actions_and_results.items():
@@ -169,8 +170,10 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
         for i, goal_description in enumerate(possible_goals):
             if goal_description.is_goal(current_node.state):
                 current_node.consistent_goals.add(goal_description)
+                current_node.is_goal_state = True
                 goal_nodes.append(current_node)
                 goals_found[i] = True
+
 
         expanded.add(current_node)
         applicable_actions = current_node.get_applicable_actions(action_set)
@@ -178,11 +181,11 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
         for action in applicable_actions:
             next_node = MultiParentNode(current_node.result(action))
 
-            print("Current node:\n", current_node)
-            print("Action:\n", action)
-            print("Next node:\n", next_node)
-            print("Visited:\n", visited)
-            print("--------------------")
+            # print("Current node:\n", current_node)
+            # print("Action:\n", action)
+            # print("Next node:\n", next_node)
+            # print("Visited:\n", visited)
+            # print("--------------------")
             if next_node in visited:
                 next_node = [node for node in visited if node == next_node][0]
                 if next_node.path_cost == current_node.path_cost + 1:
@@ -198,12 +201,21 @@ def all_optimal_plans(initial_state, action_set, possible_goals, frontier):
                 visited.add(next_node)
     
     def backpropagate_goals(node):
-        print(node)
+        # print(node)
         for parent in node.parents:
             parent.consistent_goals.update(node.consistent_goals)
             backpropagate_goals(parent)
     for goal_node in goal_nodes:
         backpropagate_goals(goal_node)
+
+    def remove_non_goal_consistent_nodes(node):
+        next = list(node.optimal_actions_and_results.items())
+        for action, next_node in next:
+            if len(next_node.consistent_goals) == 0:
+                node.optimal_actions_and_results.pop(action)
+            else:
+                remove_non_goal_consistent_nodes(next_node)
+    remove_non_goal_consistent_nodes(root)
     
     #visualize_solution_graph(root)
 
