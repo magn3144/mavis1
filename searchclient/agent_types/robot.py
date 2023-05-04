@@ -38,8 +38,42 @@ import time
 
 
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
+
   rb = robot_controller(robot_ip, initial_state, action_library, goal_description, frontier)
 
+  numberOfGoals = len(goal_description.goals)
+  if numberOfGoals > 1:
+    rb.say("There are {} goals, which goal should I persue first.".format(numberOfGoals))
+    goalNotRecognized = True
+    goalIndex = None
+    while goalNotRecognized:
+      goal = rb.listen()
+      goalNotRecognized = False
+      if goal == "one":
+        goalIndex = 0
+      elif goal == "two":
+        goalIndex = 1
+      elif goal == "three":
+        goalIndex = 2
+      elif goal == "four":
+        goalIndex = 3
+      else:
+        goalNotRecognized = True
+        rb.say("I did not hear that can you say it again?")
+    if goalIndex is not None:
+      subGoal = goal_description.get_sub_goal(goalIndex)
+      solvable, plan = graph_search(initial_state, [action_library], subGoal, frontier)
+      if not solvable:
+        rb.say("The level you have given me is not solvable.")
+        return
+      rb.say("I found a solution.")
+
+      rb.execute_plan(plan)
+
+      rb.say("The plan is executed.")
+
+
+  '''
   solvable, plan = graph_search(initial_state, [action_library], goal_description, frontier)
   if not solvable:
     rb.say("The level you have given me is not solvable.")
@@ -49,6 +83,7 @@ def robot_agent_type(level, initial_state, action_library, goal_description, fro
   rb.execute_plan(plan)
 
   rb.say("The plan is executed.")
+  '''
 
   # close the connection
   rb.shutdown()

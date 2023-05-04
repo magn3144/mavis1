@@ -11,7 +11,7 @@ from whisper_tool import get_text_from_sound
 import re
 from search_algorithms.graph_search import graph_search
 
-debug_ri = False
+debug_ri = True
 
 """
 Using the robot agent type differs from previous agent types.
@@ -300,8 +300,9 @@ class RobotClient():
             'playback': playback
         }
         message = msgpack.packb(listen_cmd, use_bin_type=True)
-        self.client_socket.send(message)
-        data = self.client_socket.recv(1024)
+        if not debug_ri:
+            self.client_socket.send(message)
+            data = self.client_socket.recv(1024)
 
 class robot_controller():
     def __init__(self, robot_ip, initial_state, action_set, goal_description, frontier):
@@ -349,9 +350,6 @@ class robot_controller():
 
     def shutdown(self):
         self.robot.shutdown()
-
-    def graphSearchProblem(self):
-        print()
 
 
 if __name__ == '__main__':
