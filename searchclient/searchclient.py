@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-debug = True
+debug = False
 
 import argparse
 import memory
@@ -46,8 +46,8 @@ def load_level_file_from_server():
 
 
 def load_level_file_from_path(path):
-    if debug:
-        path = "../{}".format(path)
+    # if debug:
+    #     path = "../{}".format(path)
     with open(path, "r") as f:
         lines = f.readlines()
         lines = list(map(lambda line: line.strip(), lines))
@@ -118,7 +118,7 @@ def parse_command_line_arguments():
 
 if __name__ == '__main__':
     if debug:
-        parameters = ["bfs", "goalcount", "default", "robot", "levels/magnus_robot_test.lvl", "test_ip"]
+        parameters = ["bfs", "goalcount", "default", "goalrecognition", "levels/magnus_goal_recognition_3.lvl", "test_ip"]
     else:
         parameters = parse_command_line_arguments()
 

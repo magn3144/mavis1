@@ -57,7 +57,7 @@ The folder 'agent_types' contains multiple different type of agents which can be
 - 'robot' - A physical robot!!!
 
 ```bash
-$ java -jar server.jar -g -s 300 -t 180 -c "python searchclient/searchclient.py -decentralised" -l levels/SAD1.lvl
+$ java -jar server.jar -g -s 300 -t 180 -c "python searchclient/searchclient.py -goalrecognition" -l levels/SAD1.lvl
 ```
 
 ## Debugging

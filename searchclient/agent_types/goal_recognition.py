@@ -18,6 +18,7 @@ from utils import *
 from collections import ChainMap
 import copy
 import sys
+from search_algorithms.graph_search import graph_search
 
 
 actor_AGENT = 0
@@ -168,6 +169,43 @@ def and_search(goal_recognition_nodes, path, goal_description, action_set, depth
             return False
     return True
 
+def help_to_goal(initial_state, action_set, goal_description, frontier, solution_graph):
+    action_set = [action_set] * initial_state.level.num_agents
+    actor_color = initial_state.level.colors['0']
+    color_filtered_state = initial_state.color_filter(actor_color)
+    planning_success, plan = graph_search(color_filtered_state, action_set, goal_description, frontier)
+
+    if not planning_success:
+        print("Unable to solve level.", file=sys.stderr)
+        return
+
+    for action in plan:
+        action = action[0]
+        helper_actions = solution_graph.helper_actions
+        joint_actions = []
+        for i in range(len(helper_actions)):
+            if i == 0:
+                joint_actions.append([action, helper_actions[i]])
+            else:
+                joint_actions.append([GenericNoOp(), helper_actions[i]])
+        
+        for joint_action in joint_actions:
+            print(joint_action_to_string(joint_action), flush=True)
+            print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
+            initial_state = initial_state.result(joint_action)
+
+            # execution_successes = parse_response(read_line())
+            # if False in execution_successes:
+            #     print("Execution failed! Stopping...", file=sys.stderr)
+            #     return
+            
+        # Go to the node that the actor agent chose
+        for actor_action in solution_graph.optimal_actions_and_results.keys():
+            if actor_action.name == action.name:
+                solution_graph = solution_graph.optimal_actions_and_results[actor_action]
+    
+    return initial_state
+
 def goal_recognition_agent_type(level, initial_state, action_library, goal_description, frontier):
     # You should implement your goal recognition agent type here. You can take inspiration on how to structure the code
     # from your previous helper and non deterministic agent types.
@@ -187,7 +225,11 @@ def goal_recognition_agent_type(level, initial_state, action_library, goal_descr
     if solution_graph:
         print("success")
         # visualize_solution_graph(solution_graph)
-        return solution_graph
     else:
         print("no helper policy found")
         return None
+    
+    # get first subgoal from goal_description
+    sub_goal = goal_description.get_sub_goal(0)
+
+    new_state = help_to_goal(initial_state, action_library, sub_goal, frontier, solution_graph)

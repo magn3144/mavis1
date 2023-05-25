@@ -38,7 +38,6 @@ import time
 
 
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
-
   rb = robot_controller(robot_ip, initial_state, action_library, goal_description, frontier)
 
   numberOfGoals = len(goal_description.goals)
