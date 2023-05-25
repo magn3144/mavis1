@@ -183,15 +183,16 @@ def help_to_goal(initial_state, action_set, goal_description, frontier, solution
         action = action[0]
         helper_actions = solution_graph.helper_actions
         joint_actions = []
-        for i in range(len(helper_actions)):
-            if i == 0:
-                joint_actions.append([action, helper_actions[i]])
+        for i in range(len(helper_actions) + 1):
+            if i == len(helper_actions):
+                joint_actions.append([action, GenericNoOp()])
             else:
                 joint_actions.append([GenericNoOp(), helper_actions[i]])
         
         for joint_action in joint_actions:
             print(joint_action_to_string(joint_action), flush=True)
             print(joint_action_to_string(joint_action), file=sys.stderr, flush=True)
+            #print(initial_state, file=sys.stderr, flush=True)
             initial_state = initial_state.result(joint_action)
 
             # execution_successes = parse_response(read_line())
@@ -206,16 +207,7 @@ def help_to_goal(initial_state, action_set, goal_description, frontier, solution
     
     return initial_state
 
-def goal_recognition_agent_type(level, initial_state, action_library, goal_description, frontier):
-    # You should implement your goal recognition agent type here. You can take inspiration on how to structure the code
-    # from your previous helper and non deterministic agent types.
-    # Note: Similarly to the non deterministic agent type, this is not a fast algorithm and you should therefore start
-    # by testing on very small levels, such as those found in the assignment.
-    possible_goals = []
-    for i in range(goal_description.num_sub_goals()):
-        possible_goals.append(goal_description.get_sub_goal(i))
-    actor_color = initial_state.level.colors[str(actor_AGENT)]
-    monocrome_initial_state = initial_state.color_filter(actor_color)
+def get_solution_graph(monocrome_initial_state, action_library, possible_goals, frontier, initial_state, goal_description):
     solutions_found, solution_graph = all_optimal_plans(monocrome_initial_state, action_library, possible_goals, frontier)
     if not solutions_found:
         print("no actor policy found")
@@ -225,11 +217,29 @@ def goal_recognition_agent_type(level, initial_state, action_library, goal_descr
     if solution_graph:
         print("success")
         # visualize_solution_graph(solution_graph)
+        return solution_graph
     else:
         print("no helper policy found")
         return None
-    
-    # get first subgoal from goal_description
-    sub_goal = goal_description.get_sub_goal(0)
 
-    new_state = help_to_goal(initial_state, action_library, sub_goal, frontier, solution_graph)
+def goal_recognition_agent_type(level, initial_state, action_library, goal_description, frontier):
+    # You should implement your goal recognition agent type here. You can take inspiration on how to structure the code
+    # from your previous helper and non deterministic agent types.
+    # Note: Similarly to the non deterministic agent type, this is not a fast algorithm and you should therefore start
+    # by testing on very small levels, such as those found in the assignment.
+    possible_goals = []
+    for i in range(goal_description.num_sub_goals()):
+        possible_goals.append(goal_description.get_sub_goal(i))
+    actor_color = initial_state.level.colors[str(actor_AGENT)]
+
+    # Solve all subgoals in random order
+    random.shuffle(possible_goals)
+    updated_possible_goals = copy.deepcopy(possible_goals)
+    for i, sub_goal in enumerate(possible_goals):
+        monocrome_initial_state = initial_state.color_filter(actor_color)
+        solution_graph = get_solution_graph(monocrome_initial_state, action_library, updated_possible_goals, frontier, initial_state, goal_description)
+        if not solution_graph:
+            print("no solution found", file=sys.stderr)
+            return
+        initial_state = help_to_goal(initial_state, action_library, sub_goal, frontier, solution_graph)
+        updated_possible_goals.remove(sub_goal)

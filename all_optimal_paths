@@ -1,51 +1,94 @@
 digraph {
-	0 [label="0 -> {((2, 3), '0', True), ((2, 1), '0', True)}
+	0 [label="0 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
 +++++
-+ 0 +
++0A +
++   +
 +   +
 +++++
 False
-[NoOp]"]
-	1 [label="1 -> {((2, 3), '0', True), ((2, 1), '0', True)}
+[Move(S), Move(S)]"]
+	1 [label="1 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
 +++++
++ 0A+
 +   +
-+ 0 +
-+++++
-False
-[NoOp, Move(N)]"]
-	4 [label="4 -> {((2, 1), '0', True)}
-+++++
 +   +
-+0  +
 +++++
 True
 []"]
-	1 -> 4 [label="Move(W)"]
-	5 [label="5 -> {((2, 3), '0', True)}
+	5 [label="5 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
 +++++
++  A+
++ 0 +
 +   +
-+  0+
 +++++
 True
 []"]
-	1 -> 5 [label="Move(E)"]
-	0 -> 1 [label="Move(S)"]
-	2 [label="2 -> {((2, 1), '0', True)}
+	25 [label="25 -> {((1, 3), 'A', True)}
 +++++
++  A+
++   +
++ 0 +
++++++
+True
+[]"]
+	5 -> 25 [label="Move(S)"]
+	26 [label="26 -> {((1, 3), 'A', True)}
++++++
++  A+
 +0  +
 +   +
 +++++
-False
-[NoOp]"]
-	2 -> 4 [label="Move(S)"]
-	0 -> 2 [label="Move(W)"]
-	3 [label="3 -> {((2, 3), '0', True)}
+True
+[]"]
+	5 -> 26 [label="Move(W)"]
+	28 [label="28 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
 +++++
++  A+
 +  0+
 +   +
 +++++
+True
+[]"]
+	5 -> 28 [label="Move(E)"]
+	1 -> 5 [label="Move(S)"]
+	7 [label="7 -> {((1, 3), 'A', True)}
++++++
++0 A+
++   +
++   +
++++++
+True
+[]"]
+	7 -> 26 [label="Move(S)"]
+	1 -> 7 [label="Move(W)"]
+	0 -> 1 [label="Push(E,E)"]
+	3 [label="3 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
++++++
++ 0 +
++ A +
++   +
++++++
 False
-[NoOp, Move(W)]"]
-	3 -> 5 [label="Move(S)"]
-	0 -> 3 [label="Move(E)"]
+[NoOp, Move(S), NoOp]"]
+	15 [label="15 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
++++++
++   +
++ 0A+
++   +
++++++
+False
+[NoOp, NoOp]"]
+	15 -> 28 [label="Push(E,N)"]
+	3 -> 15 [label="Push(S,E)"]
+	16 [label="16 -> {((2, 3), '0', True), ((1, 3), 'A', True)}
++++++
++ A0+
++   +
++   +
++++++
+False
+[NoOp, NoOp, NoOp]"]
+	16 -> 28 [label="Pull(S,E)"]
+	3 -> 16 [label="Pull(E,N)"]
+	0 -> 3 [label="Push(E,S)"]
 }

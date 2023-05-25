@@ -1,20 +1,20 @@
 #domain
 hospital
 #levelname
-magnus_goal_recognition_5
+magnus_goal_recognition_6
 #colors
-blue: 0
-red: 1
+blue: 0, A
+red: 1, B
 #initial
 +++++
-++0++
-+ 1 +
-++ ++
++0  +
++A1B+
++   +
 +++++
 #goal
 +++++
-++ ++
++  A+
++   +
 +  0+
-++ ++
 +++++
 #end
