@@ -58,7 +58,7 @@ class RobotClient():
         
         '''
 
-        if self.ip == '192.168.1.102':
+        if self.ip == '192.168.1.152':
             port = 5001  # if port fails you have from 5000-5009
         elif self.ip == '192.168.1.106':
             port = 5010  # if port fails you have from 5010-5019

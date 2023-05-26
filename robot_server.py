@@ -44,7 +44,7 @@ class RealRobot:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
         
-        if self.ip == '192.168.1.102':
+        if self.ip == '192.168.1.152':
             ssh.connect(hostname=self.ip, username="nao", password="salt")
         elif self.ip == '192.168.1.106':
             ssh.connect(hostname=self.ip, username="nao", password="pepper")
@@ -209,7 +209,7 @@ def server_program(robot):
     host = socket.gethostname()
 
     # Base port number for all robots off of ip address
-    if robot.ip == '192.168.1.100':
+    if robot.ip == '192.168.1.152':
         port = 5001  # if port fails you have from 5000-5009
     elif robot.ip == '192.168.1.106':
         port = 5010  # if port fails you have from 5010-5019
