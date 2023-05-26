@@ -58,7 +58,7 @@ class RobotClient():
         
         '''
 
-        if self.ip == '192.168.1.102':
+        if self.ip == '192.168.1.152':
             port = 5001  # if port fails you have from 5000-5009
         elif self.ip == '192.168.1.106':
             port = 5010  # if port fails you have from 5010-5019
@@ -353,15 +353,19 @@ class robot_controller():
 
 
 if __name__ == '__main__':
-    # get the ip address of the robot
-    ip = 0 #sys.argv[1]
+     # get the ip address of the robot
+    ip = sys.argv[1]
 
     # connect to the server and robot
+    robot = RobotClient(ip)
 
-    rc = robot_controller(ip)
+    # test the robots listening
+    #robot.listen(3, playback=True)
 
-    # cmd_input = rc.listen()
-    # rc.move(cmd_input)
+    # test the robots speech
+    robot.stand()
 
-    # # shutdown the robot
-    # rc.shutdown()
+    #robot.say('I am executing plan. Please watch out!')
+    robot.say('I am connected!')
+    
+    from agent_types.robot import robot_agent_type as robot_agent

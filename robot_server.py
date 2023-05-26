@@ -44,7 +44,7 @@ class RealRobot:
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
         
-        if self.ip == '192.168.1.102':
+        if self.ip == '192.168.1.152':
             ssh.connect(hostname=self.ip, username="nao", password="salt")
         elif self.ip == '192.168.1.106':
             ssh.connect(hostname=self.ip, username="nao", password="pepper")
@@ -171,7 +171,7 @@ class RealRobot:
         
         # Get the audio data but do not pass through socket. 
         # Instead save it locally for faster speech to text!
-        self.scp.get('test.wav', local_path="C:\\Users\\magnu\\My Drive\\DTU\\6. Semester\\13-Ugers\\Symbolic Artificial Intelligence\\mavis1\\searchclient\\tmp")
+        self.scp.get('test.wav', local_path="C:\\Users\\magnu")
         print("[INFO]: File " + 'test.wav' + " downloaded to " + str(os.getcwd())+"/tmp/")
         self.scp.close()
     
@@ -209,7 +209,7 @@ def server_program(robot):
     host = socket.gethostname()
 
     # Base port number for all robots off of ip address
-    if robot.ip == '192.168.1.100':
+    if robot.ip == '192.168.1.152':
         port = 5001  # if port fails you have from 5000-5009
     elif robot.ip == '192.168.1.106':
         port = 5010  # if port fails you have from 5010-5019
@@ -263,6 +263,7 @@ def server_program(robot):
 if __name__ == '__main__':
     # get the ip address of the robot
     ip = sys.argv[1]
+    print(ip)
 
     # create a robot object and pass the ip address
     robot = RealRobot(ip)
