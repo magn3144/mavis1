@@ -11,7 +11,6 @@ from whisper_tool import get_text_from_sound
 import re
 from search_algorithms.graph_search import graph_search
 
-debug_ri = True
 
 """
 Using the robot agent type differs from previous agent types.
@@ -47,8 +46,6 @@ def degrees(degree):
 # Robot Client Class for use with the robot server class
 class RobotClient():
     def __init__(self, ip):
-        if debug_ri:
-            return
         self.ip = ip
 
         '''
@@ -62,7 +59,7 @@ class RobotClient():
             port = 5001  # if port fails you have from 5000-5009
         elif self.ip == '192.168.1.106':
             port = 5010  # if port fails you have from 5010-5019
-        elif self.ip == '192.168.1.110':
+        elif self.ip == '192.168.1.106':
             port = 5020 # if port fails you have from 5020-5029
         elif self.ip == '192.168.1.108':
             port = 5030 # if port fails you have from 5030-5039
@@ -108,9 +105,8 @@ class RobotClient():
             'block': block
         }
         message = msgpack.packb(forward_cmd, use_bin_type=True)
-        if not debug_ri:
-            self.client_socket.send(message)
-            data = self.client_socket.recv(1024).decode()
+        self.client_socket.send(message)
+        data = self.client_socket.recv(1024).decode() 
     
     def say(self, s):
         """
@@ -133,9 +129,8 @@ class RobotClient():
             'sentence': s
         }
         message = msgpack.packb(say_cmd, use_bin_type=True)
-        if not debug_ri:
-            self.client_socket.send(message)  # send message
-            data = self.client_socket.recv(1024)
+        self.client_socket.send(message)  # send message
+        data = self.client_socket.recv(1024)
 
     def turn(self,angle,block):
         """
@@ -157,9 +152,8 @@ class RobotClient():
             'block': block
         }
         message = msgpack.packb(turn_cmd, use_bin_type=True)
-        if not debug_ri:
-            self.client_socket.send(message)
-            data = self.client_socket.recv(1024)
+        self.client_socket.send(message)
+        data = self.client_socket.recv(1024)
 
     
     def stand(self):
@@ -184,9 +178,8 @@ class RobotClient():
             'type': 'shutdown'
         }
         message = msgpack.packb(shutdown_cmd, use_bin_type=True)
-        if not debug_ri:
-            self.client_socket.send(message)
-            data = self.client_socket.recv(1024)
+        self.client_socket.send(message)
+        data = self.client_socket.recv(1024)
 
     def move(self,x,y,theta,block):
         '''
@@ -300,9 +293,8 @@ class RobotClient():
             'playback': playback
         }
         message = msgpack.packb(listen_cmd, use_bin_type=True)
-        if not debug_ri:
-            self.client_socket.send(message)
-            data = self.client_socket.recv(1024)
+        self.client_socket.send(message)
+        data = self.client_socket.recv(1024)
 
 class robot_controller():
     def __init__(self, robot_ip, initial_state, action_set, goal_description, frontier):

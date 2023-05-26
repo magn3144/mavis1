@@ -23,8 +23,6 @@ from agent_types.helper import helper_agent_type
 from agent_types.non_deterministic import non_deterministic_agent_type
 from agent_types.goal_recognition import goal_recognition_agent_type
 from agent_types.robot import robot_agent_type
-from robot_interface import debug_ri
-debug_ri = debug
 from domains.hospital import *
 from strategies.bfs import FrontierBFS
 from strategies.dfs import FrontierDFS
