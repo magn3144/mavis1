@@ -37,39 +37,85 @@ from search_algorithms.graph_search import graph_search
 import time
 
 
+
+
+
+
+from utils import *
+from robot_interface import *
+from domains.hospital.actions import ROBOT_ACTION_LIBRARY
+from search_algorithms.graph_search import graph_search
+import time
+
 def robot_agent_type(level, initial_state, action_library, goal_description, frontier, robot_ip):
   rb = robot_controller(robot_ip, initial_state, action_library, goal_description, frontier)
 
-  numberOfGoals = len(goal_description.goals)
-  if numberOfGoals > 1:
-    rb.say("There are {} goals, which goal should I persue first.".format(numberOfGoals))
-    goalNotRecognized = True
-    goalIndex = None
-    while goalNotRecognized:
-      goal = rb.listen()
-      goalNotRecognized = False
-      if goal == "one":
-        goalIndex = 0
-      elif goal == "two":
-        goalIndex = 1
-      elif goal == "three":
-        goalIndex = 2
-      elif goal == "four":
-        goalIndex = 3
-      else:
-        goalNotRecognized = True
-        rb.say("I did not hear that can you say it again?")
-    if goalIndex is not None:
-      subGoal = goal_description.get_sub_goal(goalIndex)
-      solvable, plan = graph_search(initial_state, [action_library], subGoal, frontier)
+  # Keep running until the program is manually stopped.
+  while True:
+
+    # Ask the human for the action they are performing.
+    rb.say("Please tell me the action you are performing.")
+    action_description = rb.listen()
+
+    # Update the state based on the human's action.
+    # This would require parsing `action_description` into the actual action and its arguments, 
+    # and then applying this action to the `initial_state`. I'm leaving this as a placeholder 
+    # since the specifics would depend on your application.
+    initial_state = update_state_based_on_action(initial_state, action_description)
+
+    # Perform goal recognition based on the updated state and the action library.
+    # Again, the specifics of `recognize_goal` would depend on your application.
+    goal_description = recognize_goal(initial_state, action_library)
+
+    # Check if a goal was recognized.
+    if goal_description is not None:
+      rb.say("I think your goal is: {}".format(goal_description))
+      # Plan and execute actions to help achieve the recognized goal.
+      solvable, plan = graph_search(initial_state, [action_library], goal_description, frontier)
       if not solvable:
-        rb.say("The level you have given me is not solvable.")
-        return
-      rb.say("I found a solution.")
-
+        rb.say("I'm unable to help achieve this goal.")
+        continue
+      rb.say("I found a solution and will execute it now.")
       rb.execute_plan(plan)
+      rb.say("Plan executed.")
+    else:
+      rb.say("I'm not sure what your goal is. Please continue with your actions.")
+  
+  # close the connection
+  rb.shutdown()
 
-      rb.say("The plan is executed.")
+def update_state_based_on_action(state, action_description):
+  action_parts = action_description.split()
+
+  # Let's assume that the actions are in the form of 'move to X' or 'pick up Y'
+  if action_parts[0] == 'move':
+    state['actor_location'] = action_parts[1]
+
+  elif action_parts[0] == 'push':
+    item = action_parts[1]
+    if item in state[state['actor_location']]:
+      state['actor_items'].append(state[state['actor_location']].pop(state[state['actor_location']].index(item)))
+    else:
+      print('Error: Tried to push an item not in current location.')
+
+  return state
+
+def recognize_goal(state, action_library):
+  # For this example, let's assume that if the actor moves to the location of an item, 
+  # their goal is to pick up that item.
+
+  actor_location = state['actor_location']
+  items_at_location = state[actor_location]
+
+  if len(items_at_location) > 0:
+    # If there's at least one item at the actor's location, 
+    # we'll say that the goal is to pick up the first item.
+    return "pick up {}".format(items_at_location[0])
+
+  else:
+    # If there are no items at the actor's location, we'll say that no goal was recognized.
+    return None
+
 
 
   '''
